@@ -1,7 +1,7 @@
-<script setup lang="ts">
-import ConnectionClient from "~/components/connection.client.vue";
-</script>
+<script setup lang="ts"></script>
 
 <template>
-  <Menu />
+  <section>
+    <Menu />
+  </section>
 </template>

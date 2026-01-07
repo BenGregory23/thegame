@@ -2,7 +2,10 @@
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
-  modules: ['@nuxt/image', '@nuxtjs/tailwindcss', 'shadcn-nuxt'],
+  modules: ['@nuxt/image', '@nuxtjs/tailwindcss', 'shadcn-nuxt', '@nuxtjs/color-mode'],
+  colorMode: {
+    classSuffix: ''
+  },
   shadcn: {
     /**
      * Prefix for all the imported component.
@@ -17,6 +20,7 @@ export default defineNuxtConfig({
      */
     componentDir: '@/components/ui'
   },
+  ssr: false,
   nitro: {
     experimental: {
       websocket: true
