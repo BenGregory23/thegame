@@ -8,12 +8,15 @@ const { selectStack, selectedStack } = useGame();
 
 <template>
   <div class="flex flex-col gap-4">
-    <GameDeck v-if="stack.cards.length >= 3" :value="stack.cards.at(stack.cards.length - 1)?.value" />
-    <GameCard v-else :value="stack.cards.at(stack.cards.length - 1)?.value" />
     <div
       @click="() => selectStack(stack.id!)"
       :class="selectedStack?.id === stack.id ? 'ring-accent ring-4' : 'ring-0'"
-      class="rounded-sm border bg-primary w-12 h-20 flex flex-col font-semibold justify-center items-center text-primary-foreground text-2xl hover:cursor-pointer">
+      class="hover:cursor-pointer rounded-sm">
+      <GameDeck v-if="stack.cards.length >= 3" :value="stack.cards.at(stack.cards.length - 1)?.value" />
+      <GameCard v-else :value="stack.cards.at(stack.cards.length - 1)?.value" />
+    </div>
+    <div
+      class="rounded-sm border bg-primary w-12 h-20 lg:w-15 lg:h-24 flex flex-col font-semibold justify-center items-center text-primary-foreground text-2xl">
       <div v-if="stack.type == StackType.INCREASE" class="flex flex-col items-center">
         <ArrowUp />
         <span

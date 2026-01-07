@@ -6,6 +6,8 @@ export enum Events {
 
 
     GAME_START = "game:start",
+    GAME_WIN = "game:win",
+    GAME_LOOSE = "game:loose",
     GAME_STATE = "game:state",
     PLAYER_STATE = "player:state",
     TURN_FINISH = "turn:finish",
@@ -23,7 +25,9 @@ export enum GameStatus {
     WAITING = "waiting",
     STARTING = "starting",
     IN_PROGRESS = "in_progress",
-    FINISHED = "finished"
+    FINISHED = "finished",
+    LOST = "lost",
+    ERROR = "error"
 }
 export interface IMessage {
     text: string
@@ -51,17 +55,17 @@ export interface IFrontendStack extends IStack {
 }
 
 export interface IPayload {
-    socketID?: string,
     roomID: string,
+    socketID?: string,
     player?: string,
-    content: IMessage | any
+    content?: IMessage | any
 }
 
 export interface IPlayer {
     id: string // socket id
     username: string,
     hand?: ICard[],
-    isReady?: boolean,
+    handSize?: number
 }
 
 export interface IPublicState {
@@ -82,7 +86,7 @@ export interface IPlayerState extends IPublicState {
 
 export interface ISettings {
     maxPlayers?: number,
-    minPlayers?: number,
+    minPlayers: number,
 }
 
 

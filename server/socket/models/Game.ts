@@ -1,4 +1,3 @@
-import consola from "consola";
 import { GameStatus, IPlayer, ICard, IStack, StackType } from "~~/shared/types";
 
 export class Game {
@@ -16,6 +15,7 @@ export class Game {
         minPlayers: number;
     };
     MINIMUM_HAND_LENGTH = 7;
+    NUMBER_OF_CARDS_TO_PLACE = 98;
 
     constructor(roomId: string, hostId: string) {
         this.roomId = roomId;
@@ -34,7 +34,7 @@ export class Game {
             throw new Error("Game already started");
         }
 
-        this.players.set(socketId, { username: username, id: socketId, hand: [], isReady: false })
+        this.players.set(socketId, { username: username, id: socketId, hand: [] })
     }
 
     removePlayer(socketId: string) {
@@ -53,15 +53,52 @@ export class Game {
 
     // Game Lifecycle
     canStart(): boolean {
-        console.log(this.players.size)
         return (
             this.status === GameStatus.WAITING &&
             this.players.size >= this.settings.minPlayers
-            //  &&
-            // Array.from(this.players.values()).every(p => p.isReady)
         );
     }
 
+    // Initialisation
+
+    /**
+     * Fills the deck with cards from 2 to 99
+     */
+    private initDeck() {
+        for (let i = 2; i <= 99; i++) {
+            this.deck.push({ value: i });
+        }
+    }
+
+    /**
+     * Takes 7 cards for each player from the deck at random;
+     */
+    private initPlayersHands() {
+        const FULL_HAND_LENGTH = 7;
+        for (let player of this.players.values()) {
+            for (let y = 0; y < FULL_HAND_LENGTH; y++) {
+                const randomIndex = Math.floor(Math.random() * this.deck.length);
+                const popped = this.deck.splice(randomIndex, 1);
+                player.hand!.push(popped[0])
+            }
+        }
+    }
+
+    /**
+     * Initializes the 4 stacks the players will play on : 
+     * UP_1 : an increase stack
+     * UP_2 : a second increase stack
+     * DOWN_1 : a decrease stack
+     * DOWN_2 : a second decrease stack
+     */
+    private initStacks() {
+        this.stacks.set("UP_1", { type: StackType.INCREASE, cards: [] })
+        this.stacks.set("UP_2", { type: StackType.INCREASE, cards: [] })
+        this.stacks.set("DOWN_1", { type: StackType.DECREASE, cards: [] })
+        this.stacks.set("DOWN_2", { type: StackType.DECREASE, cards: [] })
+    }
+
+    // Player actions
     startGame(): void {
         if (!this.canStart()) {
             throw new Error("Cannot start game");
@@ -74,60 +111,25 @@ export class Game {
         this.setFirstTurn()
     }
 
-    private setFirstTurn(): void {
-        const playerIds = Array.from(this.players.keys());
-        this.currentTurn = playerIds[0];
-        this.turnIndex = 0;
-    }
+    drawCard(socketId: string): ICard {
+        if (this.deck.length === 0) {
+            throw new Error("No cards in deck.")
+        }
 
-    nextTurn(): void {
+        // Get random index instead of just popping from end
+        const randomIndex = Math.floor(Math.random() * this.deck.length);
+        const drawn: ICard = this.deck.splice(randomIndex, 1)[0];
 
-        this.replenishPlayerHand(this.currentTurn!);
-        // set next player to play
-        const playerIds = Array.from(this.players.keys());
-        this.turnIndex = (this.turnIndex + 1) % playerIds.length;
-        this.currentTurn = playerIds[this.turnIndex];
+        const player = this.players.get(socketId);
+        if (!player) {
+            throw new Error("Player not found");
+        }
 
+        player.hand!.push(drawn);
         this.updateActivity();
-    }
 
-    private replenishPlayerHand(socketId: string) {
-        // draw cards to replenish player hand
-        const numberOfCardsToDraw = this.MINIMUM_HAND_LENGTH - this.players.get(socketId)!.hand!.length;
-        if (!numberOfCardsToDraw) {
-            throw new Error("Could not get number of cards to draw")
-        }
-        if (this.deck.length > 0) {
-            for (let i = 0; i < numberOfCardsToDraw; i++) {
-                this.drawCard(socketId)
-            }
-        }
+        return drawn;
     }
-
-    private initDeck() {
-        for (let i = 2; i <= 99; i++) {
-            this.deck.push({ value: i });
-        }
-    }
-
-    private initPlayersHands() {
-        const FULL_HAND_LENGTH = 7;
-        for (let player of this.players.values()) {
-            for (let y = 0; y < FULL_HAND_LENGTH; y++) {
-                const randomIndex = Math.floor(Math.random() * this.deck.length);
-                const popped = this.deck.splice(randomIndex, 1);
-                player.hand!.push(popped[0])
-            }
-        }
-    }
-
-    private initStacks() {
-        this.stacks.set("UP_1", { type: StackType.INCREASE, cards: [] })
-        this.stacks.set("UP_2", { type: StackType.INCREASE, cards: [] })
-        this.stacks.set("DOWN_1", { type: StackType.DECREASE, cards: [] })
-        this.stacks.set("DOWN_2", { type: StackType.DECREASE, cards: [] })
-    }
-
 
     playCard(socketId: string, card: ICard, stackId: string) {
         const stack = this.stacks.get(stackId);
@@ -136,9 +138,6 @@ export class Game {
         }
 
         const lastCard = stack.cards.at(stack.cards.length - 1)
-        consola.info("stack", stack)
-        consola.info("last card", lastCard)
-        consola.info("card", card)
 
         if (stack.type === StackType.INCREASE) {
             if (lastCard) {
@@ -163,7 +162,84 @@ export class Game {
             }
         }
 
+        this.updateGameState();
         this.updateActivity();
+    }
+
+    nextTurn(): void {
+
+        this.replenishPlayerHand(this.currentTurn!);
+        // set next player to play
+        const playerIds = Array.from(this.players.keys());
+        this.turnIndex = (this.turnIndex + 1) % playerIds.length;
+        this.currentTurn = playerIds[this.turnIndex];
+
+        this.updateActivity();
+    }
+
+    // Private methods
+
+    private setFirstTurn(): void {
+        const playerIds = Array.from(this.players.keys());
+        this.currentTurn = playerIds[0];
+        this.turnIndex = 0;
+    }
+
+    private replenishPlayerHand(socketId: string) {
+        // draw cards to replenish player hand
+        const numberOfCardsToDraw = this.MINIMUM_HAND_LENGTH - this.players.get(socketId)!.hand!.length;
+        if (!numberOfCardsToDraw) {
+            throw new Error("Could not get number of cards to draw")
+        }
+        if (this.deck.length > 0) {
+            for (let i = 0; i < numberOfCardsToDraw; i++) {
+                this.drawCard(socketId)
+            }
+        }
+    }
+
+    private updateGameState() {
+
+        if (this.deck.length == 0 && [...this.players.values()].reduce(
+            (acc, player) => acc + (player.handSize ?? 0),
+            0
+        )) {
+            if (this.validStacks()) {
+                this.status = GameStatus.FINISHED;
+            }
+            else {
+                this.status = GameStatus.ERROR;
+            }
+        }
+    }
+
+    private validStacks(): boolean {
+
+        // check if total length of all stacks is equal to 98 (all the cards to place)
+        let totalStacksLength = 0;
+        let inOrder = true;
+
+        for (let stack of this.stacks.values()) {
+            totalStacksLength += stack.cards.length;
+
+            if (stack.type == StackType.INCREASE) {
+                stack.cards.forEach((c, i) => {
+                    if (i == 0) return;
+                    if (c.value < stack.cards[i - 1].value) {
+                        inOrder = false;
+                    }
+                })
+            }
+            else if (stack.type == StackType.DECREASE) {
+                stack.cards.forEach((c, i) => {
+                    if (i == 0) return;
+                    if (c.value > stack.cards[i - 1].value) {
+                        inOrder = false;
+                    }
+                })
+            }
+        }
+        return totalStacksLength == this.NUMBER_OF_CARDS_TO_PLACE && inOrder;
     }
 
     private removePlayerCard(socketId: string, card: ICard) {
@@ -176,26 +252,16 @@ export class Game {
         this.updateActivity();
     }
 
-    drawCard(socketId: string): ICard {
-        if (this.deck.length === 0) {
-            throw new Error("No cards in deck.")
-        }
-
-        // Get random index instead of just popping from end
-        const randomIndex = Math.floor(Math.random() * this.deck.length);
-        const drawn: ICard = this.deck.splice(randomIndex, 1)[0];
-
-        const player = this.players.get(socketId);
-        if (!player) {
-            throw new Error("Player not found");
-        }
-
-        player.hand!.push(drawn);
-        this.updateActivity();
-
-        return drawn;
+    private updateActivity(): void {
+        this.lastActivity = Date.now();
     }
 
+
+    // Getters 
+    /**
+     * Returns the public state of the game (room number, players, stacks etc)
+     * @returns 
+     */
     getPublicState(): object {
         return {
             roomId: this.roomId,
@@ -205,7 +271,6 @@ export class Game {
                 id: p.id,
                 username: p.username,
                 handSize: p.hand!.length,
-                isReady: p.isReady
             })),
             stacks: Array.from(this.stacks.entries()).map(([id, stack]) => ({
                 id,
@@ -217,6 +282,11 @@ export class Game {
         };
     }
 
+    /**
+     * Returns the public state of the game & the player specific information (cards/hand, id)
+     * @param playerId the id of the player getting the state
+     * @returns An object containing all public state + player specific data
+     */
     getPlayerState(playerId: string) {
         const player = this.players.get(playerId);
         if (!player) return null;
@@ -226,9 +296,5 @@ export class Game {
             yourHand: player.hand,
             yourId: playerId
         };
-    }
-
-    private updateActivity(): void {
-        this.lastActivity = Date.now();
     }
 }

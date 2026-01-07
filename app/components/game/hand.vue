@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { ICard } from "~~/shared/types";
 
-const { hand, selectCard, selectedCard, isPlayertTurn } = useGame();
+const { hand, selectCard, selectedCard, isPlayerTurn } = useGame();
 const { username } = useUser();
 
 function isSelected(card: ICard, selected: ICard | null) {
@@ -13,7 +13,9 @@ function isSelected(card: ICard, selected: ICard | null) {
 
 <template>
   <section class="flex flex-col items-center">
-    <span class="text-sm font-semibold" :class="isPlayertTurn() ? 'animate-bounce' : ''">{{ username }}</span>
+    <span class="text-base font-semibold" :class="isPlayerTurn() ? 'animate-bounce' : ''">{{
+      username
+    }}</span>
     <section class="flex gap-1 w-full justify-center py-4">
       <GameCard
         :selected="isSelected(card, selectedCard)"

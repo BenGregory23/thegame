@@ -1,7 +1,7 @@
 import consola from "consola";
 import { socket } from "~/components/socket";
 import type { ICard, IFrontendStack, IPayload, IPlayer, IPlayerState, IPublicState, IStack } from "~~/shared/types";
-import { Events, type ISettings } from "~~/shared/types";
+import { Events, GameStatus, type ISettings } from "~~/shared/types";
 import { toast } from 'vue-sonner'
 
 export const useGame = () => {
@@ -38,12 +38,39 @@ export const useGame = () => {
             updatePublicState(payload.content);
         })
 
-        socket.on(Events.PLAYER_STATE, (payload: IPayload) => updatePlayerState(payload.content));
-
-        socket.on(Events.ERROR, (payload) => {
-            toast(payload)
-            consola.error(payload)
+        socket.on(Events.PLAYER_JOINED, (payload: IPayload) => {
+            players.value.push({
+                id: payload.content.id,
+                username: payload.content.username,
+            })
         })
+
+        socket.on(Events.GAME_WIN, () => {
+            toast("YOU WIN!")
+        })
+
+        socket.on(Events.GAME_LOOSE, () => {
+            toast("YOU LOOSE!")
+        })
+
+        socket.on(Events.ERROR, (payload: { error: string }) => {
+            toast(payload.error);
+        })
+
+        socket.on(Events.PLAYER_STATE, (payload: IPayload) => updatePlayerState(payload.content));
+    }
+
+    function cleanup() {
+        status.value = GameStatus.WAITING;
+        players.value = [];
+        hostId.value = "";
+        yourId.value = "";
+        room.value = "";
+
+        // remove all listeners
+        socket.off(Events.GAME_START);
+        socket.off(Events.GAME_STATE);
+        socket.off(Events.PLAYER_JOINED);
     }
 
     function updatePublicState(state: IPublicState) {
@@ -64,23 +91,15 @@ export const useGame = () => {
         yourId.value = state.yourId;
     }
 
-    function cleanup() {
-        // remove all listeners
-        // status.value = GameStatus.WAITING;
-        // players.value = [];
-        // hostId.value = "";
-        // yourId.value = "";
-    }
+
 
     function isPlayerHost(): boolean {
         return yourId.value === hostId.value
     }
 
     function canGameStart(): boolean {
-        if (settings.value.minPlayers) {
-            return players.value.length >= settings.value.minPlayers;
-        }
-        return true
+        console.log("can game start :", status.value, players.value.length, settings.value.minPlayers)
+        return status.value === GameStatus.WAITING && players.value.length >= settings.value.minPlayers;
     }
 
     function endTurn() {
@@ -92,12 +111,12 @@ export const useGame = () => {
         reset()
     }
 
-    function isPlayertTurn() {
+    function isPlayerTurn() {
         return currentTurn.value === yourId.value;
     }
 
     function selectStack(stackId: string) {
-        if (!isPlayertTurn()) {
+        if (!isPlayerTurn()) {
             return;
         }
         const stack = stacks.value.find((s) => s.id === stackId);
@@ -109,7 +128,7 @@ export const useGame = () => {
     }
 
     function selectCard(card: ICard) {
-        if (!isPlayertTurn()) {
+        if (!isPlayerTurn()) {
             return;
         }
         selectedCard.value = card;
@@ -133,7 +152,6 @@ export const useGame = () => {
         return placedCards.value >= 2;
     }
 
-
     /**
      * Resets the local states variables after each rounded
      */
@@ -151,7 +169,7 @@ export const useGame = () => {
         yourId,
         isPlayerHost,
         canGameStart,
-        isPlayertTurn,
+        isPlayerTurn,
         currentTurn,
         stacks,
         status,

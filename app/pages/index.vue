@@ -2,6 +2,6 @@
 
 <template>
   <section>
-    <Menu />
+    <Hero />
   </section>
 </template>

@@ -7,7 +7,9 @@ export const chatHandler = (io: Server) => {
         const { text, author } = payload.content;
 
         if (!payload.roomID) {
-            throw new Error("Missing room ID");
+            const message = "Missing room ID"
+            socket.emit(Events.ERROR, { error: message })
+            throw new Error(message);
         }
         if (!text || !author) return;
         socket.to(payload.roomID!).emit(Events.CHAT_RECEIVE, payload.content);

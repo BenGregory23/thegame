@@ -1,5 +1,5 @@
 import { Server, Socket } from "socket.io"
-import { Events, IPayload, IPlayer } from "~~/shared/types";
+import { Events, GameStatus, IPayload, IPlayer } from "~~/shared/types";
 import { gameManager } from "../managers/GameManager";
 import { consola } from "consola"
 import { Game } from "../models/Game";
@@ -8,9 +8,13 @@ export const gameHandler = (io: Server) => {
 
     const joinRoom = function (this: Socket, payload: IPayload) {
         const socket = this;
-        const player: IPlayer = {
-            id: socket.id,
-            username: payload.content.username,
+
+        const playerJoined: IPayload = {
+            roomID: payload.roomID,
+            content: {
+                id: socket.id,
+                username: payload.content.username,
+            }
         }
 
         socket.join(payload.roomID);
@@ -18,17 +22,16 @@ export const gameHandler = (io: Server) => {
         let game = gameManager.getGame(payload.roomID);
         if (game) {
             consola.info("game already exists - adding player");
-            game.addPlayer(socket.id, player.username)
+            game.addPlayer(socket.id, payload.content.username)
         } else {
             consola.info("game does not exist - creating game")
             game = gameManager.createGame(payload.roomID, socket.id);
-            game.addPlayer(socket.id, player.username)
+            game.addPlayer(socket.id, payload.content.username)
         }
         socket.join(payload.roomID);
-        socket.to(payload.roomID).emit(Events.PLAYER_JOINED, player)
+        socket.to(payload.roomID).emit(Events.PLAYER_JOINED, playerJoined)
         payload.content = game.getPlayerState(socket.id)
         socket.emit(Events.PLAYER_STATE, payload)
-
     };
 
     const leaveRoom = function (this: Socket, payload: IPayload) {
@@ -70,8 +73,12 @@ export const gameHandler = (io: Server) => {
             return;
         }
 
+
         game.playCard(socket.id, payload.content.card, payload.content.stackId);
-        updatePlayers(socket, game);
+
+
+
+        updateState(socket, game);
     }
 
     const drawCard = function (this: Socket, payload: IPayload) {
@@ -84,7 +91,7 @@ export const gameHandler = (io: Server) => {
 
         try {
             game.drawCard(socket.id);
-            updatePlayers(socket, game);
+            updateState(socket, game);
         } catch (error: any) {
             handleError(socket, error.message);
         }
@@ -100,7 +107,7 @@ export const gameHandler = (io: Server) => {
 
         try {
             game.nextTurn();
-            updatePlayers(socket, game);
+            updateState(socket, game);
         } catch (error: any) {
             handleError(socket, error.message);
         }
@@ -111,7 +118,15 @@ export const gameHandler = (io: Server) => {
         throw new Error(message);
     }
 
-    function updatePlayers(socket: Socket, game: Game) {
+    function updateState(socket: Socket, game: Game) {
+
+        if (game.status == GameStatus.FINISHED) {
+            io.to(game.roomId).emit(Events.GAME_WIN);
+        }
+        else if (game.status == GameStatus.LOST) {
+            io.to(game.roomId).emit(Events.GAME_LOOSE);
+        }
+
         socket.emit(Events.PLAYER_STATE, { roomId: game.roomId, content: game.getPlayerState(socket.id) })
         socket.to(game.roomId).emit(Events.GAME_STATE, { roomId: game.roomId, content: game.getPublicState() })
     }

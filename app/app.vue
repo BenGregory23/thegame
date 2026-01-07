@@ -6,10 +6,11 @@ import Debug from "./components/debug.vue";
 
 <template>
   <div>
-    <Debug />
+    <BackgroundPattern />
     <NuxtLayout>
       <NuxtPage />
     </NuxtLayout>
     <Toaster />
+    <Debug class="z-50" />
   </div>
 </template>
