@@ -32,7 +32,8 @@ onMounted(() => {
     <GameHand />
   </section>
   <section v-else class="flex-1 flex justify-center">
-    <PreGame />
+    <PreGame v-if="status == GameStatus.WAITING" />
+    <LostGame v-if="status == GameStatus.LOST" />
   </section>
 
   <ChatClient />

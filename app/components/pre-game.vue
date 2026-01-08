@@ -4,10 +4,11 @@ import { socket } from "./socket";
 import { Dices, Share2, Sparkles, Users } from "lucide-vue-next";
 
 const { room, status, isPlayerHost, canGameStart, cleanup, players, settings } = useGame();
+const config = useRuntimeConfig();
 const isCodeShared = ref(false);
 
 function shareCode() {
-  const promise = navigator.clipboard.writeText(room.value);
+  const promise = navigator.clipboard.writeText(config.public.baseURL + `/join-room/${room.value}`);
   promise.then(() => (isCodeShared.value = true));
 }
 
@@ -67,8 +68,8 @@ function start() {
           </div>
         </div>
         <Button class="w-full h-12 text-base transition-all duration-150" @click="shareCode">
-          <span v-if="!isCodeShared" class="flex gap-2 items-center"><Share2 /> <span>Copy code</span></span>
-          <span v-else>Copied!</span>
+          <span v-if="!isCodeShared" class="flex gap-2 items-center"><Share2 /> <span>Share link</span></span>
+          <span v-else>Link copied!</span>
         </Button>
       </CardContent>
     </Card>

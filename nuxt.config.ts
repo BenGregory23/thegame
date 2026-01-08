@@ -25,5 +25,14 @@ export default defineNuxtConfig({
     experimental: {
       websocket: true
     },
-  }
+  },
+  runtimeConfig: {
+    // Private keys are only available on the server
+    apiSecret: '123',
+
+    // Public keys that are exposed to the client
+    public: {
+      baseURL: process.env.NUXT_PUBLIC_API_BASE || 'http://localhost:3000',
+    },
+  },
 })

@@ -28,7 +28,7 @@ const handleClick = () => {
 <template>
   <div class="relative group">
     <div
-      v-if="value"
+      v-if="value && value !== undefined"
       @click="handleClick"
       :class="[
         'relative rounded-md font-bold transition-all duration-200 select-none border-2',

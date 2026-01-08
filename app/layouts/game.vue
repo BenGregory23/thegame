@@ -5,6 +5,7 @@
     <div class="absolute top-2 left-2 flex gap-4">
       <ModeToggle />
       <LeaveRoom />
+      <GameRules />
     </div>
 
     <slot />

@@ -1,7 +1,9 @@
 <script setup lang="ts">
+import { ArrowUpDown, SortAsc, SortAscIcon, SortDescIcon } from "lucide-vue-next";
 import type { ICard } from "~~/shared/types";
 
 const { hand, selectCard, selectedCard, isPlayerTurn } = useGame();
+const { sortHand } = useHand();
 const { username } = useUser();
 
 function isSelected(card: ICard, selected: ICard | null) {
@@ -24,6 +26,8 @@ function isSelected(card: ICard, selected: ICard | null) {
         v-if="hand.length > 0"
         @click="() => selectCard(card)" />
       <div v-else>No Cards in hand</div>
+
+      <Button size="icon" @click="sortHand(hand)"><ArrowUpDown /></Button>
     </section>
   </section>
 </template>

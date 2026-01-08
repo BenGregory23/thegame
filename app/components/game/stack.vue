@@ -8,13 +8,36 @@ const { selectStack, selectedStack } = useGame();
 
 <template>
   <div class="flex flex-col gap-4">
-    <div
-      @click="() => selectStack(stack.id!)"
-      :class="selectedStack?.id === stack.id ? 'ring-accent ring-4' : 'ring-0'"
-      class="hover:cursor-pointer rounded-md">
-      <GameDeck v-if="stack.cards.length >= 3" :value="stack.cards.at(stack.cards.length - 1)?.value" />
-      <GameCard v-else :value="stack.cards.at(stack.cards.length - 1)?.value" />
+    <div @click="() => selectStack(stack.id!)" class="hover:cursor-pointer rounded-md">
+      <div class="relative w-14 h-20 lg:w-16 lg:h-24">
+        <!-- Card 3 (bottom) - only show if 3+ cards -->
+        <div class="absolute top-0 left-1.5 transition-all duration-200">
+          <GameCard
+            v-if="stack.cards.length >= 3"
+            :value="stack.cards.at(stack.cards.length - 3)?.value"
+            class="opacity-40 scale-95 rotate-4" />
+        </div>
+
+        <!-- Card 2 (middle) - only show if 2+ cards -->
+        <div class="absolute top-0 left-1 transition-all duration-200">
+          <GameCard
+            v-if="stack.cards.length >= 2"
+            :value="stack.cards.at(stack.cards.length - 2)?.value"
+            class="opacity-60 scale-[0.97] -rotate-1" />
+        </div>
+
+        <!-- Card 1 (top) - always show -->
+        <div class="absolute top-0 left-0 transition-all duration-200 rounded-md">
+          <GameCard
+            :value="stack.cards.at(stack.cards.length - 1)?.value"
+            :class="[
+              stack.cards.length >= 3 && '-translate-1.5 left-1',
+              selectedStack?.id === stack.id && 'ring-accent ring-4 rounded-md',
+            ]" />
+        </div>
+      </div>
     </div>
+
     <div
       class="relative rounded-md border-2 bg-primary w-14 h-20 lg:w-16 lg:h-24 flex flex-col font-semibold justify-center items-center text-primary-foreground text-2xl">
       <!-- top left value -->

@@ -23,6 +23,8 @@ export const useGame = () => {
     const selectedStack = useState<IFrontendStack | null>('game-selected-stack', () => null)
     const placedCards = useState<number>('game-cards-payed', () => 0);
 
+    // composables
+    const router = useRouter();
 
     // Initialisation
     function setRoom(r: string) {
@@ -40,17 +42,6 @@ export const useGame = () => {
             updatePublicState(payload.content);
         })
 
-        socket.on(Events.PLAYER_JOINED, (payload: IPayload) => {
-            players.value.push({
-                id: payload.content.id,
-                username: payload.content.username,
-            })
-        })
-
-        // When a card is placed (and valid) the player is notified so we update the numbers of cards placed
-        socket.on(Events.CARD_PLACE_VALID, () => placedCards.value++);
-        socket.on(Events.CARD_PLACE_INVALID, () => toast.info("This card cannot be placed on this stack"));
-
         socket.on(Events.GAME_WIN, () => {
             toast("YOU WIN!")
         })
@@ -59,11 +50,25 @@ export const useGame = () => {
             toast("YOU LOOSE!")
         })
 
+        socket.on(Events.PLAYER_JOINED, (payload: IPayload) => {
+            players.value.push({
+                id: payload.content.id,
+                username: payload.content.username,
+            })
+        })
+
+        socket.on(Events.PLAYER_STATE, (payload: IPayload) => updatePlayerState(payload.content));
+
+
+        // When a card is placed (and valid) the player is notified so we update the numbers of cards placed
+        socket.on(Events.CARD_PLACE_VALID, () => placedCards.value++);
+        socket.on(Events.CARD_PLACE_INVALID, () => toast.info("This card cannot be placed on this stack"));
+
+
         socket.on(Events.ERROR, (payload: { error: string }) => {
             toast(payload.error);
         })
 
-        socket.on(Events.PLAYER_STATE, (payload: IPayload) => updatePlayerState(payload.content));
     }
 
     function cleanup() {
@@ -77,6 +82,12 @@ export const useGame = () => {
         socket.off(Events.GAME_START);
         socket.off(Events.GAME_STATE);
         socket.off(Events.PLAYER_JOINED);
+        socket.off(Events.CARD_PLACE_VALID);
+        socket.off(Events.CARD_PLACE_INVALID);
+        socket.off(Events.GAME_WIN);
+        socket.off(Events.GAME_LOOSE);
+        socket.off(Events.ERROR);
+        socket.off(Events.PLAYER_STATE);
     }
 
     // Player actions
@@ -150,6 +161,11 @@ export const useGame = () => {
         placedCards.value = 0;
     }
 
+    function restartGame() {
+        resetState()
+        status.value = GameStatus.WAITING;
+    }
+
 
     // Conditions
     function isPlayerHost(): boolean {
@@ -158,7 +174,7 @@ export const useGame = () => {
 
     function canGameStart(): boolean {
         console.log("can game start :", status.value, players.value.length, settings.value.minPlayers)
-        return status.value === GameStatus.WAITING && players.value.length >= settings.value.minPlayers;
+        return (status.value === GameStatus.WAITING || status.value === GameStatus.LOST) && players.value.length >= settings.value.minPlayers;
     }
 
     function isPlayerTurn() {
@@ -167,6 +183,11 @@ export const useGame = () => {
 
     function minimumCardsPlaced() {
         return placedCards.value >= 2;
+    }
+
+
+    function storeDataInBrowser() {
+        // TODO implement code to store data in localstorage
     }
 
     return {
@@ -193,7 +214,8 @@ export const useGame = () => {
         endTurn,
         placeCard,
         placedCards,
-        minimumCardsPlaced
+        minimumCardsPlaced,
+        restartGame
     }
 }
 

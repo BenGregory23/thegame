@@ -1,3 +1,4 @@
+import consola from "consola";
 import { GameStatus, IPlayer, ICard, IStack, StackType } from "~~/shared/types";
 
 export class Game {
@@ -54,7 +55,7 @@ export class Game {
     // Game Lifecycle
     canStart(): boolean {
         return (
-            this.status === GameStatus.WAITING &&
+            this.status === (GameStatus.WAITING || GameStatus.LOST) &&
             this.players.size >= this.settings.minPlayers
         );
     }
@@ -136,35 +137,17 @@ export class Game {
         if (!stack) {
             throw new Error("Stack not found");
         }
-
-        const lastCard = stack.cards.at(stack.cards.length - 1)
-
-        if (stack.type === StackType.INCREASE) {
-            if (lastCard) {
-                if (card.value > lastCard?.value || card.value === (lastCard?.value - 10)) {
-                    stack.cards.push(card);
-                    this.removePlayerCard(socketId, card)
-                    return true;
-                }
-            } else {
-                stack.cards.push(card);
-                this.removePlayerCard(socketId, card);
-                return true;
-            }
+        const isPlacable = this.canCardBePlacedOnStack(card, stack);
+        if (isPlacable) {
+            stack.cards.push(card);
+            this.removePlayerCard(socketId, card);
+            return true;
         }
-        else if (stack.type === StackType.DECREASE) {
-            if (lastCard) {
-                if (card.value < lastCard.value || card.value === (lastCard.value + 10)) {
-                    stack.cards.push(card);
-                    this.removePlayerCard(socketId, card);
-                    return true;
-                }
-            } else {
-                stack.cards.push(card);
-                this.removePlayerCard(socketId, card);
-                return true;
-            }
+
+        if (!this.canPlayerPlaceAnyCard()) {
+            this.status = GameStatus.LOST;
         }
+
         this.updateGameState();
         this.updateActivity();
 
@@ -180,6 +163,11 @@ export class Game {
         this.turnIndex = (this.turnIndex + 1) % playerIds.length;
         this.currentTurn = playerIds[this.turnIndex];
 
+        consola.info("can player place card ? ", this.canPlayerPlaceAnyCard())
+        if (!this.canPlayerPlaceAnyCard()) {
+            this.status = GameStatus.LOST;
+            consola.info("Game is lost")
+        }
         this.updateActivity();
     }
 
@@ -216,6 +204,63 @@ export class Game {
             else {
                 this.status = GameStatus.ERROR;
             }
+        }
+    }
+
+
+
+    private canPlayerPlaceAnyCard() {
+        let canPlaceAnyCard = false;
+        if (!this.currentTurn) {
+            throw new Error("no player in currentTurn")
+        }
+        const player = this.players.get(this.currentTurn);
+        if (!player) {
+            throw new Error("No Player found");
+        }
+
+        for (let card of player?.hand!) {
+            if (this.canCardBePlaced(card)) {
+                canPlaceAnyCard = true;
+                break;
+            }
+        }
+
+        return canPlaceAnyCard;
+    }
+
+    /**
+     * Checks if a card can be placed or not on any stack.
+     * @param card to check
+     */
+    private canCardBePlaced(card: ICard): boolean {
+        for (let stack of this.stacks.values()) {
+            if (this.canCardBePlacedOnStack(card, stack)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private canCardBePlacedOnStack(card: ICard, stack: IStack): boolean {
+        const lastCard = stack.cards.at(- 1);
+        if (!lastCard) return true;
+
+        switch (stack.type) {
+            case StackType.INCREASE: {
+                return (
+                    card.value > lastCard.value ||
+                    card.value === lastCard.value - 10
+                )
+            }
+            case StackType.DECREASE: {
+                return (
+                    card.value < lastCard.value ||
+                    card.value === lastCard.value + 10
+                );
+            }
+            default:
+                return false;
         }
     }
 

@@ -15,7 +15,7 @@ const opponents = computed(() => filterOpponents());
   <section class="flex space-x-5 w-full justify-center p-5">
     <div class="flex flex-col items-center space-y-2" v-for="opponent in opponents">
       <span :class="currentTurn == opponent.id ? 'animate-bounce' : ''">{{ opponent.username }}</span>
-      <div class="flex">
+      <div class="flex space-x-1">
         <OpponentCard v-for="index in opponent.handSize" :key="index" />
       </div>
     </div>
