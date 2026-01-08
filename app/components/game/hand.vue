@@ -16,7 +16,7 @@ function isSelected(card: ICard, selected: ICard | null) {
     <span class="text-base font-semibold" :class="isPlayerTurn() ? 'animate-bounce' : ''">{{
       username
     }}</span>
-    <section class="flex gap-1 w-full justify-center py-4">
+    <section class="flex gap-2 w-full justify-center py-4">
       <GameCard
         :selected="isSelected(card, selectedCard)"
         v-for="card in hand"

@@ -6,6 +6,7 @@ import { toast } from 'vue-sonner'
 
 export const useGame = () => {
 
+    // Shared state
     const room = useState<string>('game-room', () => "");
     const hostId = useState<string>('game-host', () => "");
     const players = useState<IPlayer[]>('game-players', () => []);
@@ -17,12 +18,13 @@ export const useGame = () => {
     const settings = useState<ISettings>('game-settings', () => ({ minPlayers: 2 }));
     const yourId = useState<string>('game-player-id', () => "")
 
-    // local state
+    // Local state
     const selectedCard = useState<ICard | null>('game-selected-card', () => null)
     const selectedStack = useState<IFrontendStack | null>('game-selected-stack', () => null)
     const placedCards = useState<number>('game-cards-payed', () => 0);
 
 
+    // Initialisation
     function setRoom(r: string) {
         room.value = r;
     }
@@ -44,6 +46,10 @@ export const useGame = () => {
                 username: payload.content.username,
             })
         })
+
+        // When a card is placed (and valid) the player is notified so we update the numbers of cards placed
+        socket.on(Events.CARD_PLACE_VALID, () => placedCards.value++);
+        socket.on(Events.CARD_PLACE_INVALID, () => toast.info("This card cannot be placed on this stack"));
 
         socket.on(Events.GAME_WIN, () => {
             toast("YOU WIN!")
@@ -73,47 +79,7 @@ export const useGame = () => {
         socket.off(Events.PLAYER_JOINED);
     }
 
-    function updatePublicState(state: IPublicState) {
-        consola.info("public:state", state)
-        status.value = state.status;
-        players.value = state.players;
-        stacks.value = state.stacks;
-        deckSize.value = state.deckSize;
-        currentTurn.value = state.currentTurn;
-        settings.value = state.settings;
-        hostId.value = state.hostId;
-    }
-
-    function updatePlayerState(state: IPlayerState) {
-        consola.info("player:state", state)
-        updatePublicState(state);
-        hand.value = state.yourHand;
-        yourId.value = state.yourId;
-    }
-
-
-
-    function isPlayerHost(): boolean {
-        return yourId.value === hostId.value
-    }
-
-    function canGameStart(): boolean {
-        console.log("can game start :", status.value, players.value.length, settings.value.minPlayers)
-        return status.value === GameStatus.WAITING && players.value.length >= settings.value.minPlayers;
-    }
-
-    function endTurn() {
-        const payload: IPayload = {
-            roomID: room.value,
-            content: {}
-        }
-        socket.emit(Events.TURN_FINISH, payload)
-        reset()
-    }
-
-    function isPlayerTurn() {
-        return currentTurn.value === yourId.value;
-    }
+    // Player actions
 
     function selectStack(stackId: string) {
         if (!isPlayerTurn()) {
@@ -144,21 +110,63 @@ export const useGame = () => {
                 }
             }
             socket.emit(Events.CARD_PLACE, payload);
-            placedCards.value++;
         }
     }
 
-    function minimumCardsPlaced() {
-        return placedCards.value >= 2;
+    function endTurn() {
+        const payload: IPayload = {
+            roomID: room.value,
+            content: {}
+        }
+        socket.emit(Events.TURN_FINISH, payload)
+        resetState()
+    }
+
+    // State updates
+    function updatePublicState(state: IPublicState) {
+        consola.info("public:state", state)
+        status.value = state.status;
+        players.value = state.players;
+        stacks.value = state.stacks;
+        deckSize.value = state.deckSize;
+        currentTurn.value = state.currentTurn;
+        settings.value = state.settings;
+        hostId.value = state.hostId;
+    }
+
+    function updatePlayerState(state: IPlayerState) {
+        consola.info("player:state", state)
+        updatePublicState(state);
+        hand.value = state.yourHand;
+        yourId.value = state.yourId;
     }
 
     /**
      * Resets the local states variables after each rounded
      */
-    function reset() {
+    function resetState() {
         selectedCard.value = null;
         selectedStack.value = null;
         placedCards.value = 0;
+    }
+
+
+    // Conditions
+    function isPlayerHost(): boolean {
+        return yourId.value === hostId.value
+    }
+
+    function canGameStart(): boolean {
+        console.log("can game start :", status.value, players.value.length, settings.value.minPlayers)
+        return status.value === GameStatus.WAITING && players.value.length >= settings.value.minPlayers;
+    }
+
+    function isPlayerTurn() {
+        return currentTurn.value === yourId.value;
+    }
+
+    function minimumCardsPlaced() {
+        return placedCards.value >= 2;
     }
 
     return {

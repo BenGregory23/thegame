@@ -27,7 +27,7 @@ import { ArrowUp, ArrowUp01, ArrowUp10, ArrowUpCircle } from "lucide-vue-next";
           <div class="flex-1 flex items-center justify-center">
             <div
               class="w-32 h-32 rounded-full bg-linear-to-br from-primary to-accent flex items-center justify-center">
-              <span class="text-6xl"> <ArrowUpCircle class="text-5xl size-20" /></span>
+              <span class="text-6xl"> <ArrowUpCircle class="text-5xl size-20 text-white" /></span>
             </div>
           </div>
 

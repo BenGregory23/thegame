@@ -74,10 +74,13 @@ export const gameHandler = (io: Server) => {
         }
 
 
-        game.playCard(socket.id, payload.content.card, payload.content.stackId);
-
-
-
+        const isPlaced = game.playCard(socket.id, payload.content.card, payload.content.stackId);
+        if (isPlaced) {
+            socket.emit(Events.CARD_PLACE_VALID)
+        }
+        else {
+            socket.emit(Events.CARD_PLACE_INVALID)
+        }
         updateState(socket, game);
     }
 

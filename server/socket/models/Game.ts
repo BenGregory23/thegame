@@ -131,7 +131,7 @@ export class Game {
         return drawn;
     }
 
-    playCard(socketId: string, card: ICard, stackId: string) {
+    playCard(socketId: string, card: ICard, stackId: string): boolean {
         const stack = this.stacks.get(stackId);
         if (!stack) {
             throw new Error("Stack not found");
@@ -144,10 +144,12 @@ export class Game {
                 if (card.value > lastCard?.value || card.value === (lastCard?.value - 10)) {
                     stack.cards.push(card);
                     this.removePlayerCard(socketId, card)
+                    return true;
                 }
             } else {
                 stack.cards.push(card);
                 this.removePlayerCard(socketId, card);
+                return true;
             }
         }
         else if (stack.type === StackType.DECREASE) {
@@ -155,15 +157,19 @@ export class Game {
                 if (card.value < lastCard.value || card.value === (lastCard.value + 10)) {
                     stack.cards.push(card);
                     this.removePlayerCard(socketId, card);
+                    return true;
                 }
             } else {
                 stack.cards.push(card);
                 this.removePlayerCard(socketId, card);
+                return true;
             }
         }
-
         this.updateGameState();
         this.updateActivity();
+
+        // The card could not be placed 
+        return false;
     }
 
     nextTurn(): void {

@@ -7,23 +7,22 @@ import OpponentsHand from "~/components/game/opponents-hand.vue";
 
 const { username } = useUser();
 const { status, setupListeners, cleanup, room } = useGame();
+const { joinRoom, leaveRoom } = useRoom();
 
-const payload: IPayload = {
-  roomID: room.value,
-  content: {
-    username: username.value,
-  },
-};
+definePageMeta({
+  layout: "game",
+});
 
 setupListeners();
 
 onUnmounted(() => {
-  console.log(payload);
-  socket.emit(Events.ROOM_LEAVE, payload);
+  leaveRoom();
   cleanup();
 });
 
-socket.emit(Events.ROOM_JOIN, payload);
+onMounted(() => {
+  joinRoom(room.value, username.value);
+});
 </script>
 
 <template>

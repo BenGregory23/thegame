@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { Forward } from "lucide-vue-next";
+
 const { selectedCard, selectedStack, minimumCardsPlaced, placeCard, placedCards, endTurn } = useGame();
 </script>
 
@@ -10,7 +12,7 @@ const { selectedCard, selectedStack, minimumCardsPlaced, placeCard, placedCards,
     </div>
     <div class="flex space-x-2">
       <Button v-if="selectedCard?.value && selectedCard.value" @click="placeCard"> Place card </Button>
-      <Button v-if="minimumCardsPlaced()" @click="endTurn"> End turn </Button>
+      <Button v-if="minimumCardsPlaced()" @click="endTurn"><Forward /> End turn </Button>
     </div>
   </section>
 </template>

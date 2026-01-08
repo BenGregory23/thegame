@@ -13,6 +13,8 @@ export enum Events {
     TURN_FINISH = "turn:finish",
     TURN_START = "turn:start",
     CARD_PLACE = "card:place",
+    CARD_PLACE_VALID = "card:place-valid",
+    CARD_PLACE_INVALID = "card:place-invalid",
     CARD_DRAW = "card:draw",
 
     PLAYER_JOINED = "player:joined",
