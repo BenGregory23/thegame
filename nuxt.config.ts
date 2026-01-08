@@ -20,7 +20,11 @@ export default defineNuxtConfig({
      */
     componentDir: '@/components/ui'
   },
-  ssr: false,
+  routeRules: {
+    '/': { prerender: true },
+    '/room/**': { ssr: false },
+
+  },
   nitro: {
     experimental: {
       websocket: true

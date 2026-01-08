@@ -1,5 +1,14 @@
 <script setup lang="ts">
-import { HelpCircle, Target, Play, Lightbulb, CheckCircle, TrendingUp, TrendingDown } from "lucide-vue-next";
+import {
+  HelpCircle,
+  Target,
+  Play,
+  Lightbulb,
+  CheckCircle,
+  TrendingUp,
+  TrendingDown,
+  X,
+} from "lucide-vue-next";
 </script>
 
 <template>
@@ -129,21 +138,21 @@ import { HelpCircle, Target, Play, Lightbulb, CheckCircle, TrendingUp, TrendingD
             <CardContent class="space-y-3">
               <div class="flex items-start gap-3">
                 <div
-                  class="mt-1 flex-shrink-0 w-6 h-6 rounded-full bg-secondary text-secondary-foreground flex items-center justify-center text-sm font-bold">
+                  class="mt-1 shrink-0 w-6 h-6 rounded-full bg-secondary text-secondary-foreground flex items-center justify-center text-sm font-bold">
                   1
                 </div>
                 <p>Play <strong>at least 2 cards</strong> from your hand onto any of the 4 piles</p>
               </div>
               <div class="flex items-start gap-3">
                 <div
-                  class="mt-1 flex-shrink-0 w-6 h-6 rounded-full bg-secondary text-secondary-foreground flex items-center justify-center text-sm font-bold">
+                  class="mt-1 shrink-0 w-6 h-6 rounded-full bg-secondary text-secondary-foreground flex items-center justify-center text-sm font-bold">
                   2
                 </div>
                 <p>Draw back up to <strong>7 cards</strong> (if cards remain in deck)</p>
               </div>
               <div class="flex items-start gap-3">
                 <div
-                  class="mt-1 flex-shrink-0 w-6 h-6 rounded-full bg-secondary text-secondary-foreground flex items-center justify-center text-sm font-bold">
+                  class="mt-1 shrink-0 w-6 h-6 rounded-full bg-secondary text-secondary-foreground flex items-center justify-center text-sm font-bold">
                   3
                 </div>
                 <p>Pass turn to the next player</p>

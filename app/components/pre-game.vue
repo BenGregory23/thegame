@@ -6,10 +6,22 @@ import { Dices, Share2, Sparkles, Users } from "lucide-vue-next";
 const { room, status, isPlayerHost, canGameStart, cleanup, players, settings } = useGame();
 const config = useRuntimeConfig();
 const isCodeShared = ref(false);
+const isLinkShared = ref(false);
 
 function shareCode() {
+  const promise = navigator.clipboard.writeText(room.value);
+  promise.then(() => {
+    isCodeShared.value = true;
+    setTimeout(() => (isCodeShared.value = false), 10000);
+  });
+}
+
+function shareLink() {
   const promise = navigator.clipboard.writeText(config.public.baseURL + `/join-room/${room.value}`);
-  promise.then(() => (isCodeShared.value = true));
+  promise.then(() => {
+    isLinkShared.value = true;
+    setTimeout(() => (isLinkShared.value = false), 10000);
+  });
 }
 
 function start() {
@@ -67,10 +79,20 @@ function start() {
             <code class="text-2xl font-bold tracking-wider">{{ room }}</code>
           </div>
         </div>
-        <Button class="w-full h-12 text-base transition-all duration-150" @click="shareCode">
-          <span v-if="!isCodeShared" class="flex gap-2 items-center"><Share2 /> <span>Share link</span></span>
-          <span v-else>Link copied!</span>
-        </Button>
+        <div class="flex gap-2">
+          <Button class="w-1/2 h-12 text-base transition-all duration-150" @click="shareLink">
+            <span v-if="!isLinkShared" class="flex gap-2 items-center"
+              ><Share2 /> <span>Share link</span></span
+            >
+            <span v-else>Link copied!</span>
+          </Button>
+          <Button class="w-1/2 h-12 text-base transition-all duration-150" @click="shareCode">
+            <span v-if="!isCodeShared" class="flex gap-2 items-center"
+              ><Share2 /> <span>Share code</span></span
+            >
+            <span v-else>Code copied!</span>
+          </Button>
+        </div>
       </CardContent>
     </Card>
   </div>
