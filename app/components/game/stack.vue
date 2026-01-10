@@ -15,7 +15,7 @@ const { selectStack, selectedStack } = useGame();
           <GameCard
             v-if="stack.cards.length >= 3"
             :value="stack.cards.at(stack.cards.length - 3)?.value"
-            class="opacity-40 scale-95 rotate-4" />
+            class="opacity-40 scale-95 rotate-3" />
         </div>
 
         <!-- Card 2 (middle) - only show if 2+ cards -->

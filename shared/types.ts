@@ -8,7 +8,9 @@ export enum Events {
     GAME_START = "game:start",
     GAME_WIN = "game:win",
     GAME_LOOSE = "game:loose",
+    GAME_RESTART = "game:restart",
     GAME_STATE = "game:state",
+
     PLAYER_STATE = "player:state",
     TURN_FINISH = "turn:finish",
     TURN_START = "turn:start",
@@ -20,6 +22,7 @@ export enum Events {
     PLAYER_JOINED = "player:joined",
     PLAYER_LEFT = "player:left",
 
+    DISCONNECT = "disconnect",
     ERROR = "error",
 }
 
@@ -53,7 +56,7 @@ export interface IStack {
 }
 
 export interface IFrontendStack extends IStack {
-    id: "UP_1" | "UP_2" | "DOWN_1" | "DOWN_2" | undefined
+    id: "UP_1" | "UP_2" | "DOWN_1" | "DOWN_2" | undefined | string
 }
 
 export interface IPayload {

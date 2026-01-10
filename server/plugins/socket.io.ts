@@ -20,6 +20,7 @@ export default defineNitroPlugin((nitroApp: NitroApp) => {
 
         // Game
         socket.on(Events.ROOM_JOIN, joinRoom);
+        socket.on(Events.DISCONNECT, leaveRoom)
         socket.on(Events.ROOM_LEAVE, leaveRoom);
         socket.on(Events.GAME_START, startGame);
         socket.on(Events.CARD_PLACE, playCard);

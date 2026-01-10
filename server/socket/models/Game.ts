@@ -1,5 +1,5 @@
 import consola from "consola";
-import { GameStatus, IPlayer, ICard, IStack, StackType } from "~~/shared/types";
+import { GameStatus, IPlayer, ICard, IStack, StackType, IPublicState } from "~~/shared/types";
 
 export class Game {
     roomId: string;
@@ -55,7 +55,7 @@ export class Game {
     // Game Lifecycle
     canStart(): boolean {
         return (
-            this.status === (GameStatus.WAITING || GameStatus.LOST) &&
+            [GameStatus.WAITING, GameStatus.LOST].includes(this.status) &&
             this.players.size >= this.settings.minPlayers
         );
     }
@@ -101,6 +101,7 @@ export class Game {
 
     // Player actions
     startGame(): void {
+        consola.warn("starting game", this.status)
         if (!this.canStart()) {
             throw new Error("Cannot start game");
         }
@@ -141,10 +142,18 @@ export class Game {
         if (isPlacable) {
             stack.cards.push(card);
             this.removePlayerCard(socketId, card);
+
+            if (!this.canPlayerPlaceAnyCard()) {
+                consola.warn("current player cannot place any card - game lost");
+                this.status = GameStatus.LOST;
+            }
+
             return true;
+
         }
 
         if (!this.canPlayerPlaceAnyCard()) {
+            consola.warn("current player cannot place any card - game lost");
             this.status = GameStatus.LOST;
         }
 
@@ -313,7 +322,7 @@ export class Game {
      * Returns the public state of the game (room number, players, stacks etc)
      * @returns 
      */
-    getPublicState(): object {
+    getPublicState(): IPublicState {
         return {
             roomId: this.roomId,
             hostId: this.hostId,
@@ -328,7 +337,7 @@ export class Game {
                 ...stack
             })),
             deckSize: this.deck.length,
-            currentTurn: this.currentTurn,
+            currentTurn: this.currentTurn ? this.currentTurn : '',
             settings: this.settings
         };
     }
@@ -347,5 +356,10 @@ export class Game {
             yourHand: player.hand,
             yourId: playerId
         };
+    }
+
+
+    setStatus(status: GameStatus) {
+        this.status = status;
     }
 }

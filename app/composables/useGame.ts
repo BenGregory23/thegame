@@ -3,6 +3,7 @@ import { socket } from "~/components/socket";
 import type { ICard, IFrontendStack, IPayload, IPlayer, IPlayerState, IPublicState, IStack } from "~~/shared/types";
 import { Events, GameStatus, type ISettings } from "~~/shared/types";
 import { toast } from 'vue-sonner'
+import { Game } from "~~/server/socket/models/Game";
 
 export const useGame = () => {
 
@@ -47,7 +48,7 @@ export const useGame = () => {
         })
 
         socket.on(Events.GAME_LOOSE, () => {
-            toast("YOU LOOSE!")
+            // TODO something ?
         })
 
         socket.on(Events.PLAYER_JOINED, (payload: IPayload) => {
@@ -61,7 +62,10 @@ export const useGame = () => {
 
 
         // When a card is placed (and valid) the player is notified so we update the numbers of cards placed
-        socket.on(Events.CARD_PLACE_VALID, () => placedCards.value++);
+        socket.on(Events.CARD_PLACE_VALID, () => {
+            placedCards.value++;
+            selectedCard.value = null;
+        });
         socket.on(Events.CARD_PLACE_INVALID, () => toast.info("This card cannot be placed on this stack"));
 
 
@@ -91,7 +95,6 @@ export const useGame = () => {
     }
 
     // Player actions
-
     function selectStack(stackId: string) {
         if (!isPlayerTurn()) {
             return;
@@ -143,6 +146,9 @@ export const useGame = () => {
         currentTurn.value = state.currentTurn;
         settings.value = state.settings;
         hostId.value = state.hostId;
+
+        // Updating local storage
+        saveStateInLocalStorage();
     }
 
     function updatePlayerState(state: IPlayerState) {
@@ -156,6 +162,7 @@ export const useGame = () => {
      * Resets the local states variables after each rounded
      */
     function resetState() {
+        status.value = GameStatus.WAITING;
         selectedCard.value = null;
         selectedStack.value = null;
         placedCards.value = 0;
@@ -163,7 +170,7 @@ export const useGame = () => {
 
     function restartGame() {
         resetState()
-        status.value = GameStatus.WAITING;
+        router.push("/room/" + room.value);
     }
 
 
@@ -185,10 +192,63 @@ export const useGame = () => {
         return placedCards.value >= 2;
     }
 
-
-    function storeDataInBrowser() {
-        // TODO implement code to store data in localstorage
+    // Getters
+    function getPublicState() {
+        return {
+            status: status.value,
+            players: players.value,
+            stacks: stacks.value,
+            deckSize: deckSize.value,
+            currentTurn: currentTurn.value,
+            settings: settings.value,
+            hostId: hostId.value,
+        }
     }
+
+    function getPlayerState() {
+        return {
+            hand: hand.value,
+            yourId: yourId.value
+        }
+    }
+
+    function loadStateFromLocalStorage() {
+        // Loading public state
+        const publicStored = localStorage.getItem("public:state");
+        if (!publicStored) return;
+        const publicState = JSON.parse(publicStored);
+        if (!publicState) return
+
+        status.value = publicState.status;
+        players.value = publicState.players;
+        stacks.value = publicState.stacks;
+        deckSize.value = publicState.deckSize;
+        currentTurn.value = publicState.currentTurn;
+        settings.value = publicState.settings;
+        hostId.value = publicState.hostId;
+
+        // Loading player state
+        const playerStored = localStorage.getItem("player:state");
+        if (!playerStored) return;
+        const playerState = JSON.parse(playerStored);
+        if (!playerState) return;
+        hand.value = playerState.hand;
+        yourId.value = playerState.yourId;
+    }
+
+    function saveStateInLocalStorage() {
+        localStorage.setItem(
+            "public:state",
+            JSON.stringify(getPublicState())
+        )
+
+        localStorage.setItem(
+            "player:state",
+            JSON.stringify(getPlayerState())
+        )
+    }
+
+
 
     return {
         room,
@@ -215,7 +275,8 @@ export const useGame = () => {
         placeCard,
         placedCards,
         minimumCardsPlaced,
-        restartGame
+        restartGame,
+        getPublicState
     }
 }
 

@@ -1,13 +1,18 @@
-import { Server, Socket } from "socket.io"
-import { Events, GameStatus, IPayload, IPlayer } from "~~/shared/types";
+import { DisconnectReason, Server, Socket } from "socket.io"
+import { Events, GameStatus, IPayload } from "~~/shared/types";
 import { gameManager } from "../managers/GameManager";
 import { consola } from "consola"
 import { Game } from "../models/Game";
+import { parseQuery } from "vue-router";
 export const gameHandler = (io: Server) => {
 
 
     const joinRoom = function (this: Socket, payload: IPayload) {
         const socket = this;
+
+        // Add data directly to socket to access them even without payload
+        socket.data.username = payload.content.username
+        socket.data.roomID = payload.roomID
 
         const playerJoined: IPayload = {
             roomID: payload.roomID,
@@ -34,11 +39,11 @@ export const gameHandler = (io: Server) => {
         socket.emit(Events.PLAYER_STATE, payload)
     };
 
-    const leaveRoom = function (this: Socket, payload: IPayload) {
+    const leaveRoom = function (this: Socket, payload: { reason: DisconnectReason, description?: any }) {
         const socket = this;
-        const game = gameManager.getGame(payload.roomID);
+        const game = gameManager.getGame(socket.data.roomID);
         if (game) {
-            consola.info("removing player from game " + payload.content.username)
+            consola.info("removing player from game " + socket.data.username)
             game.removePlayer(socket.id);
 
             if (game.players.size === 0) {
@@ -47,9 +52,7 @@ export const gameHandler = (io: Server) => {
             }
         }
 
-
-
-        socket.to(payload.roomID).emit(Events.PLAYER_LEFT, payload)
+        socket.to(socket.data.roomID).emit(Events.PLAYER_LEFT, payload)
     };
 
     const startGame = function (this: Socket, payload: IPayload) {
@@ -63,6 +66,8 @@ export const gameHandler = (io: Server) => {
             }
         }
     }
+
+
 
     const playCard = function (this: Socket, payload: IPayload) {
         const socket = this;
@@ -129,7 +134,6 @@ export const gameHandler = (io: Server) => {
         else if (game.status == GameStatus.LOST) {
             io.to(game.roomId).emit(Events.GAME_LOOSE);
         }
-
         socket.emit(Events.PLAYER_STATE, { roomId: game.roomId, content: game.getPlayerState(socket.id) })
         socket.to(game.roomId).emit(Events.GAME_STATE, { roomId: game.roomId, content: game.getPublicState() })
     }
