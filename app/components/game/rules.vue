@@ -11,7 +11,7 @@ import {
 } from "lucide-vue-next";
 
 const { size } = defineProps<{
-  size: "default" | "lg";
+  size?: "default" | "lg";
 }>();
 </script>
 
