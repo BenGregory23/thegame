@@ -12,5 +12,11 @@ import Debug from "./components/debug.vue";
     </NuxtLayout>
     <Toaster />
     <Debug class="z-50" />
+    <a
+      href="https://www.buymeacoffee.com/tnyggdjhjxo"
+      target="_blank"
+      class="fixed bottom-6 left-6 z-50 bg-orange-500 text-white px-4 py-2 rounded-full">
+      ☕ Support me
+    </a>
   </div>
 </template>

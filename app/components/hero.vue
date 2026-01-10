@@ -6,7 +6,12 @@ import { ArrowUp, ArrowUp01, ArrowUp10, ArrowUpCircle } from "lucide-vue-next";
   <div class="flex flex-col items-center justify-center min-h-screen gap-12 px-4">
     <!-- Title -->
     <div class="text-center space-y-4">
-      <h1 class="text-7xl md:text-9xl font-bold tracking-tight">the<span class="text-primary">Gamo</span></h1>
+      <h1 class="text-7xl md:text-9xl font-bold tracking-tight relative">
+        the<span class="text-primary">Gamo</span>
+        <Badge variant="secondary" class="w-16 absolute bottom-4 -right-4 tracking-normal font-bold">
+          Beta
+        </Badge>
+      </h1>
       <p class="text-xl md:text-2xl text-muted-foreground max-w-2xl">
         Stack your way to victory. Play cards, beat the numbers.
       </p>
@@ -50,7 +55,7 @@ import { ArrowUp, ArrowUp01, ArrowUp10, ArrowUpCircle } from "lucide-vue-next";
       <NuxtLink to="/create">
         <Button size="lg" class="text-lg px-8 py-6"> Start Playing </Button>
       </NuxtLink>
-      <Button size="lg" variant="outline" class="text-lg px-8 py-6"> How to Play </Button>
+      <GameRules size="lg" />
     </div>
   </div>
 </template>

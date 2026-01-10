@@ -3,7 +3,6 @@ import { Events, GameStatus, IPayload } from "~~/shared/types";
 import { gameManager } from "../managers/GameManager";
 import { consola } from "consola"
 import { Game } from "../models/Game";
-import { parseQuery } from "vue-router";
 export const gameHandler = (io: Server) => {
 
 

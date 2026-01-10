@@ -9,12 +9,16 @@ import {
   TrendingDown,
   X,
 } from "lucide-vue-next";
+
+const { size } = defineProps<{
+  size: "default" | "lg";
+}>();
 </script>
 
 <template>
   <Dialog>
     <DialogTrigger as-child>
-      <Button variant="outline" size="lg" class="gap-2">
+      <Button :class="size && size == 'lg' && 'text-lg px-8 py-6'" variant="outline" size="lg" class="gap-2">
         <HelpCircle class="w-5 h-5" />
         How to Play
       </Button>
