@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import ChatClient from "~/components/chat.client.vue";
 import { socket } from "~/components/socket.js";
-import { Events, GameStatus, type IPayload } from "../../../shared/types";
+import { GameStatus } from "../../../shared/types";
 import TableTop from "~/components/game/table-top.vue";
 import OpponentsHand from "~/components/game/opponents-hand.vue";
 

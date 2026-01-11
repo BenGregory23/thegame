@@ -1,5 +1,6 @@
 import { Server, Socket } from "socket.io";
-import { Events, IPayload } from "~~/shared/types";
+import type { IPayload } from "~~/shared/types";
+import { Events } from "../models/events";
 
 export const chatHandler = (io: Server) => {
     const sendChat = function (this: Socket, payload: IPayload) {

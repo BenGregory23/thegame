@@ -1,8 +1,9 @@
 import { DisconnectReason, Server, Socket } from "socket.io"
-import { Events, GameStatus, IPayload } from "~~/shared/types";
+import { GameStatus, IPayload } from "~~/shared/types";
 import { gameManager } from "../managers/GameManager";
 import { consola } from "consola"
 import { Game } from "../models/Game";
+import { Events } from "../models/events";
 export const gameHandler = (io: Server) => {
 
 
