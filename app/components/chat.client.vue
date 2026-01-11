@@ -2,7 +2,7 @@
 import { MessageCircle, Users, X } from "lucide-vue-next";
 import { socket } from "~/components/socket";
 import { Events } from "~/lib/events";
-import type { IMessage, IPayload } from "~~/shared/types";
+import type { IMessage, IPayload } from "~~/shared/types/types";
 
 const messages = ref<IMessage[]>([]);
 const newMessage = ref<string>("");

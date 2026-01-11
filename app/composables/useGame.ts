@@ -1,7 +1,7 @@
 import consola from "consola";
 import { socket } from "~/components/socket";
-import type { ICard, IFrontendStack, IPayload, IPlayer, IPlayerState, IPublicState, IStack } from "~~/shared/types";
-import { GameStatus, type ISettings } from "~~/shared/types";
+import type { ICard, IFrontendStack, IPayload, IPlayer, IPlayerState, IPublicState, IStack } from "~~/shared/types/types";
+import { GameStatus, type ISettings } from "~~/shared/types/types";
 import { toast } from 'vue-sonner'
 import { Events } from "~/lib/events";
 

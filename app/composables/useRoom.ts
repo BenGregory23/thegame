@@ -1,6 +1,6 @@
 import { socket } from "~/components/socket";
 import { Events } from "~/lib/events";
-import { type IPayload } from "~~/shared/types";
+import { type IPayload } from "~~/shared/types/types";
 
 export const useRoom = () => {
     const room = useState<string>('room', () => "");

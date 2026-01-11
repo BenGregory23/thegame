@@ -1,4 +1,4 @@
-import type { ICard } from "~~/shared/types";
+import type { ICard } from "~~/shared/types/types";
 
 export const useHand = () => {
 

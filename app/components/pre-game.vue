@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { IPayload } from "~~/shared/types";
+import type { IPayload } from "~~/shared/types/types";
 import { socket } from "./socket";
 import { Dices, Share2, Sparkles, Users } from "lucide-vue-next";
 import { Events } from "~/lib/events";

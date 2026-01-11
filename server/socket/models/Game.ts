@@ -1,5 +1,5 @@
 import consola from "consola";
-import { GameStatus, IPlayer, ICard, IStack, StackType, IPublicState } from "~~/shared/types";
+import { GameStatus, IPlayer, ICard, IStack, StackType, IPublicState } from "~~/shared/types/types";
 
 export class Game {
     roomId: string;
