@@ -2,9 +2,10 @@ import type { NitroApp } from "nitropack";
 import { Server as Engine } from "engine.io";
 import { Server } from "socket.io";
 import { defineEventHandler } from "h3";
-import { Events, IPayload } from "../../shared/types";
+import { IPayload } from "../../shared/types";
 import { chatHandler } from "../socket/handlers/chatHandler";
 import { gameHandler } from "../socket/handlers/gameHandlers";
+import { Events } from "../socket/models/events";
 
 
 export default defineNitroPlugin((nitroApp: NitroApp) => {

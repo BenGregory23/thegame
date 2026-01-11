@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { Events, GameStatus, type IPayload } from "~~/shared/types";
+import type { IPayload } from "~~/shared/types";
 import { socket } from "./socket";
 import { Dices, Share2, Sparkles, Users } from "lucide-vue-next";
+import { Events } from "~/lib/events";
 
 const { room, status, isPlayerHost, canGameStart, cleanup, players, settings } = useGame();
 const config = useRuntimeConfig();

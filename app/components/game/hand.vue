@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ArrowUpDown, SortAsc, SortAscIcon, SortDescIcon } from "lucide-vue-next";
+import { ArrowUpDown } from "lucide-vue-next";
 import type { ICard } from "~~/shared/types";
 
 const { hand, selectCard, selectedCard, isPlayerTurn } = useGame();

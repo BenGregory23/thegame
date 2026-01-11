@@ -20,7 +20,7 @@ useSeoMeta({
       <NuxtPage />
     </NuxtLayout>
     <Toaster />
-    <Debug class="z-50" />
+    <!-- <Debug class="z-50" /> -->
     <a
       href="https://www.buymeacoffee.com/tnyggdjhjxo"
       target="_blank"

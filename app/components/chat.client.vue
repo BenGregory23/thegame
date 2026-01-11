@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { MessageCircle, Users, X } from "lucide-vue-next";
 import { socket } from "~/components/socket";
-import { Events, type IMessage, type IPayload, type IPlayer } from "~~/shared/types";
+import { Events } from "~/lib/events";
+import type { IMessage, IPayload } from "~~/shared/types";
 
 const messages = ref<IMessage[]>([]);
 const newMessage = ref<string>("");
