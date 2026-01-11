@@ -3,7 +3,6 @@ import { socket } from "~/components/socket";
 import type { ICard, IFrontendStack, IPayload, IPlayer, IPlayerState, IPublicState, IStack } from "~~/shared/types";
 import { Events, GameStatus, type ISettings } from "~~/shared/types";
 import { toast } from 'vue-sonner'
-import { Game } from "~~/server/socket/models/Game";
 
 export const useGame = () => {
 
@@ -23,6 +22,7 @@ export const useGame = () => {
     const selectedCard = useState<ICard | null>('game-selected-card', () => null)
     const selectedStack = useState<IFrontendStack | null>('game-selected-stack', () => null)
     const placedCards = useState<number>('game-cards-payed', () => 0);
+    const remainingCards = useState<number>('game-remaining-cards', () => 98);
 
     // composables
     const router = useRouter();
@@ -49,8 +49,9 @@ export const useGame = () => {
             toast("YOU WIN!")
         })
 
-        socket.on(Events.GAME_LOOSE, () => {
-            // TODO something ?
+        socket.on(Events.GAME_LOSE, (payload: IPayload) => {
+            consola.info("game lost - updating remaining cards", payload)
+            remainingCards.value = payload.content.remainingCards;
         })
 
         socket.on(Events.PLAYER_JOINED, (payload: IPayload) => {
@@ -91,7 +92,7 @@ export const useGame = () => {
         socket.off(Events.CARD_PLACE_VALID);
         socket.off(Events.CARD_PLACE_INVALID);
         socket.off(Events.GAME_WIN);
-        socket.off(Events.GAME_LOOSE);
+        socket.off(Events.GAME_LOSE);
         socket.off(Events.ERROR);
         socket.off(Events.PLAYER_STATE);
     }
@@ -280,7 +281,8 @@ export const useGame = () => {
         placedCards,
         minimumCardsPlaced,
         restartGame,
-        getPublicState
+        getPublicState,
+        remainingCards
     }
 }
 

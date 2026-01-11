@@ -67,8 +67,6 @@ export const gameHandler = (io: Server) => {
         }
     }
 
-
-
     const playCard = function (this: Socket, payload: IPayload) {
         const socket = this;
         const game = gameManager.getGame(payload.roomID);
@@ -128,11 +126,15 @@ export const gameHandler = (io: Server) => {
 
     function updateState(socket: Socket, game: Game) {
 
-        if (game.status == GameStatus.FINISHED) {
+        if (game.status === GameStatus.FINISHED) {
             io.to(game.roomId).emit(Events.GAME_WIN);
         }
-        else if (game.status == GameStatus.LOST) {
-            io.to(game.roomId).emit(Events.GAME_LOOSE);
+        else if (game.status === GameStatus.LOST) {
+            io.to(game.roomId).emit(Events.GAME_LOSE, {
+                roomID: game.roomId, content: {
+                    remainingCards: game.deck.length + Array.from(game.players.values()).reduce((acc, curr) => acc + (curr.handSize ?? 0), 0),
+                }
+            });
         }
         socket.emit(Events.PLAYER_STATE, { roomId: game.roomId, content: game.getPlayerState(socket.id) })
         socket.to(game.roomId).emit(Events.GAME_STATE, { roomId: game.roomId, content: game.getPublicState() })

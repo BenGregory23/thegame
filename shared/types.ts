@@ -7,7 +7,7 @@ export enum Events {
 
     GAME_START = "game:start",
     GAME_WIN = "game:win",
-    GAME_LOOSE = "game:loose",
+    GAME_LOSE = "game:lose",
     GAME_RESTART = "game:restart",
     GAME_STATE = "game:state",
 
