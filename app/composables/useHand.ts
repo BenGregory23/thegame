@@ -1,4 +1,3 @@
-import type { ICard } from "~~/shared/types/types";
 
 export const useHand = () => {
 

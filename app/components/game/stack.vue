@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ArrowDown, ArrowUp } from "lucide-vue-next";
-import type { StackType, IFrontendStack } from "~~/shared/types/types";
 
 const { stack } = defineProps<{ stack: IFrontendStack }>();
 const { selectStack, selectedStack } = useGame();

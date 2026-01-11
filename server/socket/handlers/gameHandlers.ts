@@ -1,5 +1,4 @@
 import { DisconnectReason, Server, Socket } from "socket.io"
-import { GameStatus, IPayload } from "~~/shared/types/types";
 import { gameManager } from "../managers/GameManager";
 import { consola } from "consola"
 import { Game } from "../models/Game";

@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import type { IStack } from "~~/shared/types/types";
-
 const { value } = defineProps<{ value?: number; stack?: IStack }>();
 </script>
 
