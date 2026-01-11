@@ -6,7 +6,7 @@
       <ModeToggle />
       <LeaveRoom />
       <GameRules />
-      <ReportBug />
+      <!-- <ReportBug /> -->
     </div>
 
     <slot />
