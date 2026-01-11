@@ -7,6 +7,7 @@ export const gameHandler = (io: Server) => {
 
 
     const joinRoom = function (this: Socket, payload: IPayload) {
+        consola.info("requesting to join room : ", payload.roomID);
         const socket = this;
 
         // Add data directly to socket to access them even without payload

@@ -4,7 +4,8 @@ import { socket } from "./socket";
 import Badge from "./ui/badge/Badge.vue";
 
 const { username } = useUser();
-const { room, hand, yourId, hostId, status, players, stacks, currentTurn, selectedCard } = useGame();
+const { room, hand, yourId, hostId, status, players, stacks, deckSize, currentTurn, selectedCard } =
+  useGame();
 const open = ref(false);
 
 function toggle() {
@@ -25,6 +26,7 @@ function toggle() {
       <span>host id : {{ hostId }}</span>
       <span>players : {{ players }}</span>
       <span>stacks: {{ stacks }}</span>
+      <span>deck size : {{ deckSize }}</span>
       <span>my turn : {{ currentTurn === socket.id ? true : false }}</span>
       <span>selected card : {{ selectedCard }} </span>
       <span class="text-white">

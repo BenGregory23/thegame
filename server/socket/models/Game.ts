@@ -10,6 +10,7 @@ export class Game {
     status: GameStatus = GameStatus.WAITING;
     turnIndex: number = 0;
     currentTurn: string | null = null;
+    currentNumberOfCardsPlaced = 0;
     lastActivity: number = Date.now();
     settings: {
         maxPlayers: number;
@@ -17,13 +18,14 @@ export class Game {
     };
     MINIMUM_HAND_LENGTH = 7;
     NUMBER_OF_CARDS_TO_PLACE = 98;
+    MIN_NUMBER_OF_CARDS_TO_PLACE_WITH_DECK = 2;
 
     constructor(roomId: string, hostId: string) {
         this.roomId = roomId;
         this.hostId = hostId;
         this.settings = {
             maxPlayers: 4,
-            minPlayers: 2
+            minPlayers: 2,
         };
     }
 
@@ -35,7 +37,7 @@ export class Game {
             throw new Error("Game already started");
         }
 
-        this.players.set(socketId, { username: username, id: socketId, hand: [] })
+        this.players.set(socketId, { username: username, id: socketId, hand: [], isHost: socketId == this.hostId ? true : false })
     }
 
     removePlayer(socketId: string) {
@@ -66,6 +68,7 @@ export class Game {
      * Fills the deck with cards from 2 to 99
      */
     private initDeck() {
+        this.deck = [];
         for (let i = 2; i <= 99; i++) {
             this.deck.push({ value: i });
         }
@@ -77,6 +80,8 @@ export class Game {
     private initPlayersHands() {
         const FULL_HAND_LENGTH = 7;
         for (let player of this.players.values()) {
+            if (player.hand && player.hand?.length > 0) player.hand = [];
+
             for (let y = 0; y < FULL_HAND_LENGTH; y++) {
                 const randomIndex = Math.floor(Math.random() * this.deck.length);
                 const popped = this.deck.splice(randomIndex, 1);
@@ -138,12 +143,14 @@ export class Game {
         if (!stack) {
             throw new Error("Stack not found");
         }
+
         const isPlacable = this.canCardBePlacedOnStack(card, stack);
         if (isPlacable) {
             stack.cards.push(card);
             this.removePlayerCard(socketId, card);
+            this.currentNumberOfCardsPlaced++;
 
-            if (!this.canPlayerPlaceAnyCard()) {
+            if (this.currentNumberOfCardsPlaced < this.MIN_NUMBER_OF_CARDS_TO_PLACE_WITH_DECK && !this.canPlayerPlaceAnyCard()) {
                 consola.warn("current player cannot place any card - game lost");
                 this.status = GameStatus.LOST;
             }
@@ -152,10 +159,11 @@ export class Game {
 
         }
 
-        if (!this.canPlayerPlaceAnyCard()) {
+        if (this.currentNumberOfCardsPlaced < this.MIN_NUMBER_OF_CARDS_TO_PLACE_WITH_DECK && !this.canPlayerPlaceAnyCard()) {
             consola.warn("current player cannot place any card - game lost");
             this.status = GameStatus.LOST;
         }
+
 
         this.updateGameState();
         this.updateActivity();
@@ -171,6 +179,7 @@ export class Game {
         const playerIds = Array.from(this.players.keys());
         this.turnIndex = (this.turnIndex + 1) % playerIds.length;
         this.currentTurn = playerIds[this.turnIndex];
+        this.currentNumberOfCardsPlaced = 0;
 
         consola.info("can player place card ? ", this.canPlayerPlaceAnyCard())
         if (!this.canPlayerPlaceAnyCard()) {

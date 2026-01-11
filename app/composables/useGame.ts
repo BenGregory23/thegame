@@ -33,6 +33,8 @@ export const useGame = () => {
     }
 
     function setupListeners() {
+        loadStateFromLocalStorage();
+
         socket.on(Events.GAME_START, (payload: IPayload) => {
             console.log("game:start", payload)
             updatePublicState(payload.content);
@@ -234,6 +236,8 @@ export const useGame = () => {
         if (!playerState) return;
         hand.value = playerState.hand;
         yourId.value = playerState.yourId;
+
+        consola.info("Loaded state from local storage");
     }
 
     function saveStateInLocalStorage() {

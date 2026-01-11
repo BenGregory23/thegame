@@ -26,6 +26,7 @@ function enterRoom(roomCode: string) {
 
 onMounted(() => {
   setupListeners();
+
   enterRoom(route.params.room);
   joinRoom(room.value, username.value);
 

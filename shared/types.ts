@@ -70,7 +70,8 @@ export interface IPlayer {
     id: string // socket id
     username: string,
     hand?: ICard[],
-    handSize?: number
+    handSize?: number,
+    isHost?: boolean
 }
 
 export interface IPublicState {
