@@ -4,20 +4,20 @@ FROM node:20-alpine
 # Set working directory
 WORKDIR /app
 
-# Copy package.json & lock file first (for caching)
+# Copy package.json & lock file first
 COPY package*.json ./
 
 # Install dependencies
 RUN npm install
 
-# Copy all files
+# Copy all project files
 COPY . .
 
 # Build Nuxt for production
 RUN npm run build
 
-# Expose port Nuxt will listen on
+# Expose port
 EXPOSE 3000
 
-# Start the app
-CMD ["npm", "run", "start"]
+# Start Nuxt in production mode
+CMD ["node", ".output/server/index.mjs"]
