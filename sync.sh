@@ -1,5 +1,9 @@
 #!/bin/bash
 
+
+# Update project
+git pull --rebase
+
 # Stop current container
 sudo docker stop nuxt-app
 sudo docker rm nuxt-app
