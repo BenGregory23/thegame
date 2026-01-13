@@ -1,288 +1,287 @@
 import consola from "consola";
 import { socket } from "~/components/socket";
 
-import { toast } from 'vue-sonner'
+import { toast } from "vue-sonner";
 import { Events } from "~/lib/events";
+import { loggerF } from "~/utils/consola-frontend";
 
 export const useGame = () => {
+  // Shared state
+  const room = useState<string>("game-room", () => "");
+  const hostId = useState<string>("game-host", () => "");
+  const players = useState<IPlayer[]>("game-players", () => []);
+  const hand = useState<ICard[]>("player-hand", () => []);
+  const currentTurn = useState<string>("game-current-turn", () => "");
+  const stacks = useState<IFrontendStack[]>("game-stacks", () => []);
+  const status = useState<string>("game-status", () => "WAITING");
+  const deckSize = useState<number>("game-deck-size", () => 0);
+  const settings = useState<ISettings>("game-settings", () => ({
+    minPlayers: 2,
+  }));
+  const yourId = useState<string>("game-player-id", () => "");
 
-    // Shared state
-    const room = useState<string>('game-room', () => "");
-    const hostId = useState<string>('game-host', () => "");
-    const players = useState<IPlayer[]>('game-players', () => []);
-    const hand = useState<ICard[]>('player-hand', () => []);
-    const currentTurn = useState<string>('game-current-turn', () => "");
-    const stacks = useState<IFrontendStack[]>('game-stacks', () => [])
-    const status = useState<string>('game-status', () => "WAITING");
-    const deckSize = useState<number>('game-deck-size', () => 0)
-    const settings = useState<ISettings>('game-settings', () => ({ minPlayers: 2 }));
-    const yourId = useState<string>('game-player-id', () => "")
+  // Local state
+  const selectedCard = useState<ICard | null>("game-selected-card", () => null);
+  const selectedStack = useState<IFrontendStack | null>(
+    "game-selected-stack",
+    () => null,
+  );
+  const placedCards = useState<number>("game-cards-payed", () => 0);
+  const remainingCards = useState<number>("game-remaining-cards", () => 98);
 
-    // Local state
-    const selectedCard = useState<ICard | null>('game-selected-card', () => null)
-    const selectedStack = useState<IFrontendStack | null>('game-selected-stack', () => null)
-    const placedCards = useState<number>('game-cards-payed', () => 0);
-    const remainingCards = useState<number>('game-remaining-cards', () => 98);
+  // composables
+  const router = useRouter();
 
-    // composables
-    const router = useRouter();
+  // Initialisation
+  function setRoom(r: string) {
+    room.value = r;
+  }
 
-    // Initialisation
-    function setRoom(r: string) {
-        room.value = r;
+  function setupListeners() {
+    loadStateFromLocalStorage();
+
+    socket.on(Events.GAME_START, (payload: IPayload) => {
+      loggerF.log(payload.roomID + " - starting game");
+      updatePublicState(payload.content);
+    });
+
+    socket.on(Events.GAME_STATE, (payload: IPayload) => {
+      loggerF.log(payload.roomID + " - receiving game state");
+      updatePublicState(payload.content);
+    });
+
+    socket.on(Events.GAME_WIN, () => {
+      toast("YOU WIN!");
+    });
+
+    socket.on(Events.GAME_LOSE, (payload: IPayload) => {
+      loggerF.info("game lost - updating remaining cards");
+      remainingCards.value = payload.content.remainingCards;
+    });
+
+    socket.on(Events.PLAYER_JOINED, (payload: IPayload) => {
+      players.value.push({
+        id: payload.content.id,
+        username: payload.content.username,
+      });
+    });
+
+    socket.on(Events.PLAYER_STATE, (payload: IPayload) =>
+      updatePlayerState(payload.content),
+    );
+
+    // When a card is placed (and valid) the player is notified so we update the numbers of cards placed
+    socket.on(Events.CARD_PLACE_VALID, () => {
+      placedCards.value++;
+      selectedCard.value = null;
+    });
+    socket.on(Events.CARD_PLACE_INVALID, () =>
+      toast.info("This card cannot be placed on this stack"),
+    );
+
+    socket.on(Events.ERROR, (payload: { error: string }) => {
+      toast(payload.error);
+    });
+  }
+
+  function cleanup() {
+    status.value = GameStatus.WAITING;
+    players.value = [];
+    hostId.value = "";
+    yourId.value = "";
+    room.value = "";
+
+    // remove all listeners
+    socket.off(Events.GAME_START);
+    socket.off(Events.GAME_STATE);
+    socket.off(Events.PLAYER_JOINED);
+    socket.off(Events.CARD_PLACE_VALID);
+    socket.off(Events.CARD_PLACE_INVALID);
+    socket.off(Events.GAME_WIN);
+    socket.off(Events.GAME_LOSE);
+    socket.off(Events.ERROR);
+    socket.off(Events.PLAYER_STATE);
+  }
+
+  // Player actions
+  function selectStack(stackId: string) {
+    if (!isPlayerTurn()) {
+      return;
     }
-
-    function setupListeners() {
-        loadStateFromLocalStorage();
-
-        socket.on(Events.GAME_START, (payload: IPayload) => {
-            console.log("game:start", payload)
-            updatePublicState(payload.content);
-        });
-
-        socket.on(Events.GAME_STATE, (payload: IPayload) => {
-            console.log("game:state", payload)
-            updatePublicState(payload.content);
-        })
-
-        socket.on(Events.GAME_WIN, () => {
-            toast("YOU WIN!")
-        })
-
-        socket.on(Events.GAME_LOSE, (payload: IPayload) => {
-            consola.info("game lost - updating remaining cards", payload)
-            remainingCards.value = payload.content.remainingCards;
-        })
-
-        socket.on(Events.PLAYER_JOINED, (payload: IPayload) => {
-            players.value.push({
-                id: payload.content.id,
-                username: payload.content.username,
-            })
-        })
-
-        socket.on(Events.PLAYER_STATE, (payload: IPayload) => updatePlayerState(payload.content));
-
-
-        // When a card is placed (and valid) the player is notified so we update the numbers of cards placed
-        socket.on(Events.CARD_PLACE_VALID, () => {
-            placedCards.value++;
-            selectedCard.value = null;
-        });
-        socket.on(Events.CARD_PLACE_INVALID, () => toast.info("This card cannot be placed on this stack"));
-
-
-        socket.on(Events.ERROR, (payload: { error: string }) => {
-            toast(payload.error);
-        })
-
+    const stack = stacks.value.find((s) => s.id === stackId);
+    if (!stack) {
+      consola.error("Stack not found");
+      return;
     }
+    selectedStack.value = stack;
+  }
 
-    function cleanup() {
-        status.value = GameStatus.WAITING;
-        players.value = [];
-        hostId.value = "";
-        yourId.value = "";
-        room.value = "";
-
-        // remove all listeners
-        socket.off(Events.GAME_START);
-        socket.off(Events.GAME_STATE);
-        socket.off(Events.PLAYER_JOINED);
-        socket.off(Events.CARD_PLACE_VALID);
-        socket.off(Events.CARD_PLACE_INVALID);
-        socket.off(Events.GAME_WIN);
-        socket.off(Events.GAME_LOSE);
-        socket.off(Events.ERROR);
-        socket.off(Events.PLAYER_STATE);
+  function selectCard(card: ICard) {
+    if (!isPlayerTurn()) {
+      return;
     }
+    selectedCard.value = card;
+  }
 
-    // Player actions
-    function selectStack(stackId: string) {
-        if (!isPlayerTurn()) {
-            return;
-        }
-        const stack = stacks.value.find((s) => s.id === stackId);
-        if (!stack) {
-            consola.error("Stack not found");
-            return;
-        }
-        selectedStack.value = stack;
+  function placeCard() {
+    if (selectedCard.value && selectedStack.value) {
+      const payload: IPayload = {
+        roomID: room.value,
+        content: {
+          card: selectedCard.value,
+          stackId: selectedStack.value.id,
+        },
+      };
+      socket.emit(Events.CARD_PLACE, payload);
     }
+  }
 
-    function selectCard(card: ICard) {
-        if (!isPlayerTurn()) {
-            return;
-        }
-        selectedCard.value = card;
-    }
+  function endTurn() {
+    const payload: IPayload = {
+      roomID: room.value,
+      content: {},
+    };
+    socket.emit(Events.TURN_FINISH, payload);
+    resetState();
+  }
 
-    function placeCard() {
-        if (selectedCard.value && selectedStack.value) {
-            const payload: IPayload = {
-                roomID: room.value,
-                content: {
-                    card: selectedCard.value,
-                    stackId: selectedStack.value.id
-                }
-            }
-            socket.emit(Events.CARD_PLACE, payload);
-        }
-    }
+  // State updates
+  function updatePublicState(state: IPublicState) {
+    status.value = state.status;
+    players.value = state.players;
+    stacks.value = state.stacks;
+    deckSize.value = state.deckSize;
+    currentTurn.value = state.currentTurn;
+    settings.value = state.settings;
+    hostId.value = state.hostId;
 
-    function endTurn() {
-        const payload: IPayload = {
-            roomID: room.value,
-            content: {}
-        }
-        socket.emit(Events.TURN_FINISH, payload)
-        resetState()
-    }
+    // Updating local storage
+    saveStateInLocalStorage();
+  }
 
-    // State updates
-    function updatePublicState(state: IPublicState) {
-        consola.info("public:state", state)
-        status.value = state.status;
-        players.value = state.players;
-        stacks.value = state.stacks;
-        deckSize.value = state.deckSize;
-        currentTurn.value = state.currentTurn;
-        settings.value = state.settings;
-        hostId.value = state.hostId;
+  function updatePlayerState(state: IPlayerState) {
+    updatePublicState(state);
+    hand.value = state.yourHand;
+    yourId.value = state.yourId;
+  }
 
-        // Updating local storage
-        saveStateInLocalStorage();
-    }
+  /**
+   * Resets the local states variables after each rounded
+   */
+  function resetState() {
+    status.value = GameStatus.WAITING;
+    selectedCard.value = null;
+    selectedStack.value = null;
+    placedCards.value = 0;
+  }
 
-    function updatePlayerState(state: IPlayerState) {
-        consola.info("player:state", state)
-        updatePublicState(state);
-        hand.value = state.yourHand;
-        yourId.value = state.yourId;
-    }
+  function restartGame() {
+    resetState();
+    router.push("/room/" + room.value);
+  }
 
-    /**
-     * Resets the local states variables after each rounded
-     */
-    function resetState() {
-        status.value = GameStatus.WAITING;
-        selectedCard.value = null;
-        selectedStack.value = null;
-        placedCards.value = 0;
-    }
+  // Conditions
+  function isPlayerHost(): boolean {
+    return yourId.value === hostId.value;
+  }
 
-    function restartGame() {
-        resetState()
-        router.push("/room/" + room.value);
-    }
+  function canGameStart(): boolean {
+    return (
+      (status.value === GameStatus.WAITING ||
+        status.value === GameStatus.LOST) &&
+      players.value.length >= settings.value.minPlayers
+    );
+  }
 
+  function isPlayerTurn() {
+    return currentTurn.value === yourId.value;
+  }
 
-    // Conditions
-    function isPlayerHost(): boolean {
-        return yourId.value === hostId.value
-    }
+  function minimumCardsPlaced() {
+    return placedCards.value >= 2;
+  }
 
-    function canGameStart(): boolean {
-        console.log("can game start :", status.value, players.value.length, settings.value.minPlayers)
-        return (status.value === GameStatus.WAITING || status.value === GameStatus.LOST) && players.value.length >= settings.value.minPlayers;
-    }
-
-    function isPlayerTurn() {
-        return currentTurn.value === yourId.value;
-    }
-
-    function minimumCardsPlaced() {
-        return placedCards.value >= 2;
-    }
-
-    // Getters
-    function getPublicState() {
-        return {
-            status: status.value,
-            players: players.value,
-            stacks: stacks.value,
-            deckSize: deckSize.value,
-            currentTurn: currentTurn.value,
-            settings: settings.value,
-            hostId: hostId.value,
-        }
-    }
-
-    function getPlayerState() {
-        return {
-            hand: hand.value,
-            yourId: yourId.value
-        }
-    }
-
-    function loadStateFromLocalStorage() {
-        // Loading public state
-        const publicStored = localStorage.getItem("public:state");
-        if (!publicStored) return;
-        const publicState = JSON.parse(publicStored);
-        if (!publicState) return
-
-        status.value = publicState.status;
-        players.value = publicState.players;
-        stacks.value = publicState.stacks;
-        deckSize.value = publicState.deckSize;
-        currentTurn.value = publicState.currentTurn;
-        settings.value = publicState.settings;
-        hostId.value = publicState.hostId;
-
-        // Loading player state
-        const playerStored = localStorage.getItem("player:state");
-        if (!playerStored) return;
-        const playerState = JSON.parse(playerStored);
-        if (!playerState) return;
-        hand.value = playerState.hand;
-        yourId.value = playerState.yourId;
-
-        consola.info("Loaded state from local storage");
-    }
-
-    function saveStateInLocalStorage() {
-        localStorage.setItem(
-            "public:state",
-            JSON.stringify(getPublicState())
-        )
-
-        localStorage.setItem(
-            "player:state",
-            JSON.stringify(getPlayerState())
-        )
-    }
-
-
-
+  // Getters
+  function getPublicState() {
     return {
-        room,
-        hostId,
-        players,
-        hand,
-        yourId,
-        isPlayerHost,
-        canGameStart,
-        isPlayerTurn,
-        currentTurn,
-        stacks,
-        status,
-        deckSize,
-        settings,
-        setRoom,
-        setupListeners,
-        cleanup,
-        selectCard,
-        selectedCard,
-        selectStack,
-        selectedStack,
-        endTurn,
-        placeCard,
-        placedCards,
-        minimumCardsPlaced,
-        restartGame,
-        getPublicState,
-        remainingCards
-    }
-}
+      status: status.value,
+      players: players.value,
+      stacks: stacks.value,
+      deckSize: deckSize.value,
+      currentTurn: currentTurn.value,
+      settings: settings.value,
+      hostId: hostId.value,
+    };
+  }
 
+  function getPlayerState() {
+    return {
+      hand: hand.value,
+      yourId: yourId.value,
+    };
+  }
+
+  function loadStateFromLocalStorage() {
+    // Loading public state
+    const publicStored = localStorage.getItem("public:state");
+    if (!publicStored) return;
+    const publicState = JSON.parse(publicStored);
+    if (!publicState) return;
+
+    status.value = publicState.status;
+    players.value = publicState.players;
+    stacks.value = publicState.stacks;
+    deckSize.value = publicState.deckSize;
+    currentTurn.value = publicState.currentTurn;
+    settings.value = publicState.settings;
+    hostId.value = publicState.hostId;
+
+    // Loading player state
+    const playerStored = localStorage.getItem("player:state");
+    if (!playerStored) return;
+    const playerState = JSON.parse(playerStored);
+    if (!playerState) return;
+    hand.value = playerState.hand;
+    yourId.value = playerState.yourId;
+
+    loggerF.log(room.value + " - loaded state from local storage");
+  }
+
+  function saveStateInLocalStorage() {
+    localStorage.setItem("public:state", JSON.stringify(getPublicState()));
+
+    localStorage.setItem("player:state", JSON.stringify(getPlayerState()));
+
+    loggerF.log(room.value + " - save state in local storage");
+  }
+
+  return {
+    room,
+    hostId,
+    players,
+    hand,
+    yourId,
+    isPlayerHost,
+    canGameStart,
+    isPlayerTurn,
+    currentTurn,
+    stacks,
+    status,
+    deckSize,
+    settings,
+    setRoom,
+    setupListeners,
+    cleanup,
+    selectCard,
+    selectedCard,
+    selectStack,
+    selectedStack,
+    endTurn,
+    placeCard,
+    placedCards,
+    minimumCardsPlaced,
+    restartGame,
+    getPublicState,
+    remainingCards,
+  };
+};

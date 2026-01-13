@@ -13,7 +13,7 @@ export default defineNitroPlugin((nitroApp: NitroApp) => {
   io.bind(engine);
 
   io.on("connection", (socket) => {
-    console.log("connection ", socket.id);
+    loggerB.log("connection ", socket.id);
     const { sendChat } = chatHandler(io);
     const { joinRoom, leaveRoom, startGame, playCard, drawCard, nextTurn } =
       gameHandler(io);
@@ -45,7 +45,9 @@ export default defineNitroPlugin((nitroApp: NitroApp) => {
           engine.prepare(peer._internal.nodeReq);
           // @ts-expect-error private method and property
           engine.onWebSocket(
+            // @ts-expect-error private method and property
             peer._internal.nodeReq,
+            // @ts-expect-error private method and property
             peer._internal.nodeReq.socket,
             peer.websocket,
           );
