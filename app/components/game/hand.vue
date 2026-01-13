@@ -14,9 +14,10 @@ function isSelected(card: ICard, selected: ICard | null) {
 
 <template>
   <section class="flex flex-col items-center">
-    <span class="text-base font-semibold" :class="isPlayerTurn() ? 'animate-bounce' : ''">{{
-      username
-    }}</span>
+    <span class="text-lg font-semibold" :class="isPlayerTurn() ? 'animate-bounce font-bold ' : ''"
+      >{{ username }}
+    </span>
+    <span v-if="isPlayerTurn()">(your turn)</span>
     <section class="flex gap-2 w-full justify-center py-4">
       <GameCard
         :selected="isSelected(card, selectedCard)"

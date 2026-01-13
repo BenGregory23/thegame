@@ -33,7 +33,7 @@ export default defineNitroPlugin((nitroApp: NitroApp) => {
 
     nitroApp.router.use("/socket.io/", defineEventHandler({
         handler(event) {
-            engine.handleRequest(event.node.req, event.node.res);
+            engine.handleRequest(event.node.req as any, event.node.res);
             event._handled = true;
         },
         websocket: {

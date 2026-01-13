@@ -25,7 +25,10 @@ function enterRoom(roomCode: string) {
 onMounted(() => {
   setupListeners();
 
-  enterRoom(route.params.room);
+  const params = route.params;
+  if (!params || !params.room) return;
+
+  enterRoom(params.room as string);
   joinRoom(room.value, username.value);
 
   const handler = () => {
