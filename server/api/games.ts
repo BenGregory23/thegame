@@ -24,6 +24,6 @@ export default defineEventHandler((event) => {
         ...stack,
       })),
       currentTurn: game.currentTurn,
-    })
+    }),
   );
 });

@@ -12,19 +12,10 @@ import { Badge } from "~/components/ui/badge";
 import { Input } from "~/components/ui/input";
 import type { Game } from "~~/server/socket/models/Game";
 
-definePageMeta({
-    middleware: "auth",
-});
-
 const route = useRoute();
-const router = useRouter();
 const { data, status, error, refresh } = await useFetch(
-    "/api/games?key=" + route.params.key,
+    "/api/games?key=" + route.query.key,
 );
-
-// if (error.value?.statusCode == 403 || error.value?.statusCode == 401) {
-//     router.push("/");
-// }
 
 // Auto-refresh every 10 seconds
 const autoRefresh = ref(true);
