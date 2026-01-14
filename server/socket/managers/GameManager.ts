@@ -5,12 +5,16 @@ export class GameManager {
 
 
     createGame(roomId: string, hostId: string): Game {
-        if (!roomId || !hostId) {
-            throw new Error("Missing roomId or hostId");
+        if (!roomId) {
+            throw new Error("Room ID cannot be empty.");
+        }
+
+        if (!hostId) {
+            throw new Error("Host ID cannot be empty.");
         }
 
         if (this.games.has(roomId)) {
-            throw new Error("Game already exists");
+            throw new Error(`A game with room ID '${roomId}' already exists.`);
         }
 
         const game = new Game(roomId, hostId);
