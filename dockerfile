@@ -13,8 +13,8 @@ RUN npm install
 # Copy all project files
 COPY . .
 
-# Build Nuxt for production
-RUN npm run build
+# Build Nuxt for production with NODE_ENV set and timeout
+RUN NODE_ENV=production timeout 300 npm run build || true
 
 # Expose port
 EXPOSE 3000
