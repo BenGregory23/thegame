@@ -67,6 +67,17 @@ export interface ISettings {
     minPlayers: number,
 }
 
+export interface IGameAdminDTO {
+  roomId: string;
+  hostId: string;
+  status: GameStatus;
+  players: IPlayer[];
+  lastActivity: number;
+  settings: ISettings;
+  deckSize: number;
+  stacks: IFrontendStack[];
+  currentTurn: string | null;
+}
 
 
 
