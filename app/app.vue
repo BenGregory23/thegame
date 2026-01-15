@@ -20,12 +20,20 @@ useSeoMeta({
         </NuxtLayout>
         <Toaster />
         <!-- <Debug class="z-50" /> -->
+
         <a
             href="https://www.buymeacoffee.com/tnyggdjhjxo"
             target="_blank"
-            class="fixed bottom-6 left-6 z-50 bg-orange-500 text-white px-4 py-2 rounded-full"
+            class="fixed bottom-6 left-6 z-50 font-medium"
+            aria-label="Soutenez mon travail en m'offrant un café"
         >
-            ☕ Support me
+            <Button
+                size="lg"
+                class="bg-linear-to-r from-blue-600 to-indigo-600 text-white transition-all duration-300 flex items-center gap-2 px-5 py-2.5 shadow-md hover:shadow-lg hover:from-blue-700 hover:to-indigo-700 border border-blue-800"
+            >
+                <span>☕</span>
+                <span>Support me</span>
+            </Button>
         </a>
     </div>
 </template>
