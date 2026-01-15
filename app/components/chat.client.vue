@@ -5,6 +5,7 @@ import { Events } from "~/lib/events";
 
 const messages = ref<IMessage[]>([]);
 const newMessage = ref<string>("");
+const unseenCount = ref<number>(0);
 const { username } = useUser();
 const { room, players } = useGame();
 const open = ref(false);
@@ -35,6 +36,8 @@ function sendMessage() {
 onMounted(() => {
     socket.on(Events.CHAT_RECEIVE, (msg: IMessage) => {
         messages.value.push(msg);
+
+        if (!open.value) unseenCount.value++;
     });
 
     socket.on(Events.PLAYER_JOINED, (payload: IPayload) => {
@@ -63,6 +66,10 @@ onBeforeUnmount(() => {
     socket.off(Events.PLAYER_LEFT);
 });
 
+watch(open, () => {
+    unseenCount.value = 0;
+});
+
 function toggle() {
     open.value = !open.value;
 }
@@ -81,6 +88,12 @@ function toggle() {
                 :aria-label="open ? 'Close chat' : 'Open chat'"
             >
                 <MessageCircle />
+                <Badge
+                    variant="secondary"
+                    v-if="unseenCount > 0"
+                    class="absolute -top-3 -left-3"
+                    >{{ unseenCount }}</Badge
+                >
             </Button>
 
             <!-- Chat Panel -->
