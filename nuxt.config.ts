@@ -37,7 +37,7 @@ export default defineNuxtConfig({
   runtimeConfig: {
     admin_key: process.env.ADMIN_KEY,
     public: {
-      baseURL: process.env.NUXT_PUBLIC_API_BASE || "http://localhost:3000",
+      baseURL: process.env.URL || "http://localhost:3000",
     },
   },
 });
