@@ -9,51 +9,58 @@ const { joinRoom, leaveRoom } = useRoom();
 const route = useRoute();
 
 definePageMeta({
-  layout: "game",
+    layout: "game",
+});
+
+useHead({
+    title: computed(() => "The Gamo - Room " + room.value),
 });
 
 onBeforeUnmount(() => {
-  leaveRoom();
-  cleanup();
+    leaveRoom();
+    cleanup();
 });
 
 function enterRoom(roomCode: string) {
-  if (!username.value || username.value.length < 2) return;
-  setRoom(roomCode);
+    if (!username.value || username.value.length < 2) return;
+    setRoom(roomCode);
 }
 
 onMounted(() => {
-  setupListeners();
+    setupListeners();
 
-  const params = route.params;
-  if (!params || !params.room) return;
+    const params = route.params;
+    if (!params || !params.room) return;
 
-  enterRoom(params.room as string);
-  joinRoom(room.value, username.value);
+    enterRoom(params.room as string);
+    joinRoom(room.value, username.value);
 
-  const handler = () => {
-    leaveRoom();
-    cleanup();
-  };
+    const handler = () => {
+        leaveRoom();
+        cleanup();
+    };
 
-  window.addEventListener("beforeunload", handler);
+    window.addEventListener("beforeunload", handler);
 
-  onBeforeUnmount(() => {
-    window.removeEventListener("beforeunload", handler);
-  });
+    onBeforeUnmount(() => {
+        window.removeEventListener("beforeunload", handler);
+    });
 });
 </script>
 
 <template>
-  <section v-if="status === GameStatus.IN_PROGRESS" class="flex-1 flex flex-col justify-between h-full">
-    <OpponentsHand />
-    <TableTop />
-    <GameHand />
-  </section>
-  <section v-else class="flex-1 flex justify-center">
-    <PreGame v-if="status == GameStatus.WAITING" />
-    <LostGame v-if="status == GameStatus.LOST" />
-  </section>
+    <section
+        v-if="status === GameStatus.IN_PROGRESS"
+        class="flex-1 flex flex-col justify-between h-full"
+    >
+        <OpponentsHand />
+        <TableTop />
+        <GameHand />
+    </section>
+    <section v-else class="flex-1 flex justify-center">
+        <PreGame v-if="status == GameStatus.WAITING" />
+        <LostGame v-if="status == GameStatus.LOST" />
+    </section>
 
-  <ChatClient />
+    <ChatClient />
 </template>

@@ -10,6 +10,12 @@ useSeoMeta({
     ogImage: "https://example.com/image.png",
     twitterCard: "summary_large_image",
 });
+
+useHead({
+    htmlAttrs: {
+        lang: "en",
+    },
+});
 </script>
 
 <template>
