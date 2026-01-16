@@ -24,7 +24,7 @@ export const gameHandler = (io: Server) => {
 
     let game = gameManager.getGame(payload.roomID);
     if (game) {
-      loggerB.log(payload.roomID + " - game already exists | adding player");
+      loggerB.info(payload.roomID + " - game already exists | adding player");
       game.addPlayer(socket.id, payload.content.username);
     } else {
       loggerB.info("NO_ROOM - game does not exist | creating game");

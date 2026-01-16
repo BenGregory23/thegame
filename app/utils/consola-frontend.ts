@@ -1,7 +1,9 @@
-import { createConsola } from "consola";
+import { Logger } from "tslog";
 
-export const loggerF = createConsola({
-  formatOptions: {
-    date: true,
-  },
-}).withTag("frontend");
+export const loggerF = new Logger({
+  prettyLogTemplate:
+    "{{yyyy}}-{{mm}}-{{dd}} {{hh}}:{{MM}}:{{ss}} [{{logLevelName}}] ",
+  prettyErrorTemplate:
+    "{{yyyy}}-{{mm}}-{{dd}} {{hh}}:{{MM}}:{{ss}} [{{logLevelName}}] {{errorName}} - {{errorMessage}}",
+  prettyErrorStackTemplate: "  at {{filePathWithLine}}",
+});

@@ -41,12 +41,12 @@ export const useGame = () => {
     loadStateFromLocalStorage();
 
     socket.on(Events.GAME_START, (payload: IPayload) => {
-      loggerF.log(payload.roomID + " - starting game");
+      loggerF.info(payload.roomID + " - starting game");
       updatePublicState(payload.content);
     });
 
     socket.on(Events.GAME_STATE, (payload: IPayload) => {
-      loggerF.log(payload.roomID + " - receiving game state");
+      loggerF.info(payload.roomID + " - receiving game state");
       updatePublicState(payload.content);
     });
 
@@ -244,7 +244,7 @@ export const useGame = () => {
     hand.value = playerState.hand;
     yourId.value = playerState.yourId;
 
-    loggerF.log(room.value + " - loaded state from local storage");
+    loggerF.info(room.value + " - loaded state from local storage");
   }
 
   function saveStateInLocalStorage() {
@@ -252,7 +252,7 @@ export const useGame = () => {
 
     localStorage.setItem("player:state", JSON.stringify(getPlayerState()));
 
-    loggerF.log(room.value + " - save state in local storage");
+    loggerF.info(room.value + " - save state in local storage");
   }
 
   return {

@@ -13,7 +13,7 @@ export default defineNitroPlugin((nitroApp: NitroApp) => {
   io.bind(engine);
 
   io.on("connection", (socket) => {
-    loggerB.log("connection ", socket.id);
+    loggerB.info("connection ", socket.id);
     const { sendChat } = chatHandler(io);
     const { joinRoom, leaveRoom, startGame, playCard, drawCard, nextTurn } =
       gameHandler(io);

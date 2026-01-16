@@ -122,7 +122,7 @@ export class Game {
 
   // Player actions
   startGame(): void {
-    loggerB.log(this.roomId + " - starting game");
+    loggerB.info(this.roomId + " - starting game");
     if (!this.canStart()) {
       throw new Error("Cannot start game");
     }
