@@ -12,6 +12,14 @@ definePageMeta({
     layout: "game",
 });
 
+useSeoMeta({
+    ogTitle: computed(() => "The Gamo - Room " + room.value),
+    description: "Room to play The Gamo",
+    ogDescription: "Room to play The Gamo",
+    ogImage: "https://example.com/image.png",
+    twitterCard: "summary_large_image",
+});
+
 useHead({
     title: computed(() => "The Gamo - Room " + room.value),
 });
