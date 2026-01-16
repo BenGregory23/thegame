@@ -8,7 +8,7 @@ useSeoMeta({
     ogTitle: "The Gamo, the game's web version",
     description: "Play the game online with your friends!",
     ogDescription: "Play the game online with your friends!",
-    ogImage: "https://example.com/image.png",
+    ogImage: "https://thegamo.app/public/images/the_gamo_presentation_card.png",
     twitterCard: "summary_large_image",
 });
 </script>

@@ -4,7 +4,7 @@ import { Toaster } from "@/components/ui/sonner";
 
 useSeoMeta({
     title: "The Gamo",
-    ogTitle: "The Gamo, the game's web version",
+    ogTitle: "The Gamo, The Game's web version",
     description: "Play the game online with your friends!",
     ogDescription: "Play the game online with your friends!",
     ogImage: "https://example.com/image.png",
