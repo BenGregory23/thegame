@@ -4,7 +4,7 @@
   
   <p>
     <a href="https://thegamo.yourdomain.com">
-      <img src="https://img.shields.io/website?url=https%3A%2F%2Fthegamo.app&up_message=online&up_color=brightgreen&down_message=offline&down_color=red&label=site%20status" alt="Website Status">
+      <img src="https://img.shields.io/website?url=https://thegamo.app&up_message=online&up_color=brightgreen&down_message=offline&down_color=red&label=site%20status" alt="Website Status">
     </a>
     <img src="https://img.shields.io/badge/nuxt-4.0-00DC82?logo=nuxt.js" alt="Nuxt">
     <img src="https://img.shields.io/badge/vue-3.0-4FC08D?logo=vue.js" alt="Vue">
