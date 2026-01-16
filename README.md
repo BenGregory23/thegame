@@ -12,7 +12,7 @@
   </p>
 
   <p>
-    <a href="https://thegamo.yourdomain.com">🎮 Play Now</a> •
+    <a href="https://thegamo.app">🎮 Play Now</a> •
     <a href="#features">Features</a> •
     <a href="#getting-started">Getting Started</a> •
     <a href="#deployment">Deployment</a>
