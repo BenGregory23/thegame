@@ -8,6 +8,8 @@ useSeoMeta({
     description: "Play the game online with your friends!",
     ogDescription: "Play the game online with your friends!",
     ogImage: "https://thegamo.app/presentation_card.png",
+    ogImageWidth: "1200",
+    ogImageHeight: "630",
     twitterCard: "summary_large_image",
 });
 
